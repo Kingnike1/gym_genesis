@@ -17,10 +17,10 @@ use PHPMailer\PHPMailer\Exception;
 function conectar()
 {
 
-  $servidor = "db";
-  $user = "root";
-  $password = "123";
-  $banco = "gym_genesis";
+  $servidor = getenv('DB_HOST');
+  $user = getenv('DB_USER');
+  $password = getenv('DB_PASSWORD');
+  $banco = getenv('DB_NAME');
 
   return mysqli_connect($servidor, $user, $password, $banco);
 }

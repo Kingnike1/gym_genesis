@@ -3,10 +3,25 @@ version: '3.8'
 services:
   php:
     build: .
+    env_file:
+      - .env
     container_name: "php"
-    image: php:8.1.16-apache
+    image: gym_genesis_php
     volumes:
       - ./:/var/www/html/
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - APP_SECRET=${APP_SECRET}
     ports:
       - "83:80"
 

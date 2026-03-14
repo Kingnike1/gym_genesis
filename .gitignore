@@ -2,7 +2,12 @@ vendor/composer/installed.php
 /code/tests/teste_imagem
 vendor/composer/installed.php
 vendor/composer/installed.php
-/vendor
+vendor/
+.env
+composer.lock
+*.log
+.DS_Store
+docker/db_data/
 composer.json
 *.zip
 testes_SH/TestHelloWorld.php
