@@ -20,45 +20,50 @@ class Router
 
     public static function dispatch()
     {
-        $uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $method = $_SERVER['REQUEST_METHOD'];
 
-        // Remove o prefixo /gym_genesis se a aplicação estiver em um subdiretório
-        $basePath = 'gym_genesis'; // Ajuste conforme o caminho real no servidor web
-        if (strpos($uri, $basePath) === 0) {
-            $uri = substr($uri, strlen($basePath));
-            $uri = trim($uri, '/');
+        // 🔥 REMOVE automaticamente /public da URL
+        $scriptName = dirname($_SERVER['SCRIPT_NAME']); 
+        // Ex: /public
+
+        if ($scriptName !== '/' && strpos($uri, $scriptName) === 0) {
+            $uri = substr($uri, strlen($scriptName));
         }
 
+        $uri = trim($uri, '/');
+
         foreach (self::$routes[$method] ?? [] as $route => $callback) {
-            // Converte a rota para uma expressão regular para capturar parâmetros
+
             $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
+
             if (preg_match('#^' . $pattern . '$#', $uri, $matches)) {
-                array_shift($matches); // Remove a correspondência completa da URI
+                array_shift($matches);
 
                 if (is_callable($callback)) {
                     call_user_func_array($callback, $matches);
+
                 } elseif (is_string($callback)) {
-                    list($controller, $method) = explode('@', $callback);
+
+                    list($controller, $action) = explode('@', $callback);
                     $controller = 'App\\Controllers\\' . $controller;
+
                     if (class_exists($controller)) {
-                        $controllerInstance = new $controller();
-                        if (method_exists($controllerInstance, $method)) {
-                            call_user_func_array([$controllerInstance, $method], $matches);
-                        } else {
-                            self::handleNotFound();
+                        $instance = new $controller();
+
+                        if (method_exists($instance, $action)) {
+                            call_user_func_array([$instance, $action], $matches);
+                            return;
                         }
-                    } else {
-                        self::handleNotFound();
                     }
-                } else {
+
                     self::handleNotFound();
+                    return;
                 }
-                return; // Rota encontrada e despachada
             }
         }
 
-        self::handleNotFound(); // Nenhuma rota encontrada
+        self::handleNotFound();
     }
 
     protected static function handleNotFound()
