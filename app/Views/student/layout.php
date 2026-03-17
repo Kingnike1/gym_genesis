@@ -73,8 +73,8 @@
             <li><a href="/gym_genesis/student/dashboard">Dashboard</a></li>
             <li><a href="/gym_genesis/student/treinos">Meus Treinos</a></li>
             <li><a href="/gym_genesis/student/dietas">Minhas Dietas</a></li>
-            <li><a href="#">Progresso</a></li>
-            <li><a href="#">Perfil</a></li>
+            <li><a href="/gym_genesis/student/progresso">Progresso</a></li>
+            <li><a href="/gym_genesis/student/perfil">Perfil</a></li>
         </ul>
     </div>
     <div class="content">

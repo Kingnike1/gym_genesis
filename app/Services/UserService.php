@@ -65,4 +65,24 @@ class UserService
     {
         return $this->userRepository->getAllUsers();
     }
+
+    public function updateUserPassword(int $id, string $passwordHash): bool
+    {
+        $currentUser = $this->userRepository->findById($id);
+        if (!$currentUser) {
+            return false;
+        }
+
+        return $this->userRepository->update($id, $passwordHash, $currentUser['email'], $currentUser['tipo_usuario']);
+    }
+
+    public function updateUserEmail(int $id, string $email): bool
+    {
+        $currentUser = $this->userRepository->findById($id);
+        if (!$currentUser) {
+            return false;
+        }
+
+        return $this->userRepository->update($id, $currentUser['senha'], $email, $currentUser['tipo_usuario']);
+    }
 }

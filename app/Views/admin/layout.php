@@ -72,9 +72,10 @@
         <ul>
             <li><a href="/gym_genesis/admin/dashboard">Dashboard</a></li>
             <li><a href="/gym_genesis/admin/users">Usuários</a></li>
-            <li><a href="#">Professores</a></li>
-            <li><a href="#">Planos & Assinaturas</a></li>
-            <li><a href="#">Loja</a></li>
+            <li><a href="/gym_genesis/admin/users">Professores</a></li>
+            <li><a href="/gym_genesis/admin/plans">Planos & Assinaturas</a></li>
+            <li><a href="/gym_genesis/admin/products">Loja</a></li>
+            <li><a href="/gym_genesis/admin/orders">Pedidos</a></li>
             <li><a href="#">Fórum</a></li>
             <li><a href="#">Aulas</a></li>
             <li><a href="#">Logs</a></li>

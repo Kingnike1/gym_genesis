@@ -230,10 +230,6 @@ Router::get(
 );
 
 // Rotas do Dashboard do Aluno
-Router::get(
-    uri: '/student/dashboard',
-    callback: 'StudentDashboardController@index'
-);
 
 Router::get(
     uri: '/student/treinos',
@@ -253,4 +249,56 @@ Router::get(
 Router::get(
     uri: '/student/dietas/{id}',
     callback: 'StudentDietaController@show'
+);
+
+// Rotas de Perfil do Aluno
+Router::get(
+    uri: '/student/perfil',
+    callback: 'StudentProfileController@show'
+);
+
+Router::post(
+    uri: '/student/perfil',
+    callback: 'StudentProfileController@update'
+);
+
+// Rotas de Progresso do Aluno
+Router::get(
+    uri: '/student/progresso',
+    callback: 'StudentProgressController@index'
+);
+
+Router::get(
+    uri: '/student/avaliacoes',
+    callback: 'StudentProgressController@avaliacoes'
+);
+
+Router::get(
+    uri: '/student/avaliacoes/create',
+    callback: 'StudentProgressController@create'
+);
+
+Router::post(
+    uri: '/student/avaliacoes',
+    callback: 'StudentProgressController@store'
+);
+
+Router::get(
+    uri: '/student/avaliacoes/{id}',
+    callback: 'StudentProgressController@show'
+);
+
+Router::get(
+    uri: '/student/avaliacoes/{id}/edit',
+    callback: 'StudentProgressController@edit'
+);
+
+Router::post(
+    uri: '/student/avaliacoes/{id}',
+    callback: 'StudentProgressController@update'
+);
+
+Router::get(
+    uri: '/student/avaliacoes/{id}/delete',
+    callback: 'StudentProgressController@delete'
 );

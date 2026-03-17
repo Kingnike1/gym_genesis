@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS `gym_genesis`.`plano` (
   `idplano` INT(11) NOT NULL AUTO_INCREMENT,
   `tipo` VARCHAR(45) NOT NULL,
   `duracao` VARCHAR(45) NOT NULL,
+  `preco` DECIMAL(10,2) NULL DEFAULT NULL,
+  `descricao` TEXT NULL DEFAULT NULL,
+  `duriasDias` INT(11) NULL DEFAULT 30,
   PRIMARY KEY (`idplano`))
 
 ENGINE = InnoDB

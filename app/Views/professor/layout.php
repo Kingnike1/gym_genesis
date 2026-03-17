@@ -73,8 +73,8 @@
             <li><a href="/gym_genesis/professor/dashboard">Dashboard</a></li>
             <li><a href="/gym_genesis/professor/treinos">Treinos</a></li>
             <li><a href="/gym_genesis/professor/dietas">Dietas</a></li>
-            <li><a href="#">Alunos</a></li>
-            <li><a href="#">Acompanhamento</a></li>
+            <li><a href="/gym_genesis/admin/users">Alunos</a></li>
+            <li><a href="/gym_genesis/admin/users">Acompanhamento</a></li>
         </ul>
     </div>
     <div class="content">
