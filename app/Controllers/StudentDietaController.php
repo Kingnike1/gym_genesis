@@ -2,9 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Services\DietaService;
-use App\Repositories\DietaRepository;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\RouteAuthorizationMiddleware;
+use App\Repositories\DietaRepository;
+use App\Services\DietaService;
 
 class StudentDietaController extends Controller
 {
@@ -20,7 +21,7 @@ class StudentDietaController extends Controller
     {
         $userId = AuthMiddleware::getUserId();
         $dietas = $this->dietaService->getDietasByAlunoId($userId);
-        $this->render("student/dietas/index", ["dietas" => $dietas]);
+        $this->render('student/dietas/index', ['dietas' => $dietas]);
     }
 
     public function show(int $id): void
@@ -29,7 +30,9 @@ class StudentDietaController extends Controller
         if (!$dieta) {
             $this->handleNotFound();
         }
-        $this->render("student/dietas/show", ["dieta" => $dieta]);
+
+        RouteAuthorizationMiddleware::requireOwner((int) $dieta['aluno_id']);
+        $this->render('student/dietas/show', ['dieta' => $dieta]);
     }
 
     protected function handleNotFound(): void
