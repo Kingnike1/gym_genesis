@@ -15,6 +15,9 @@
 # User uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+!/public/uploads/1academia.webp
+!/public/uploads/padrao.png
+!/public/uploads/padrao2.png
 
 # Test artifacts
 /code/tests/teste_imagem/
