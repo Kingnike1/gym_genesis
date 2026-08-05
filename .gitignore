@@ -1,17 +1,20 @@
-vendor/composer/installed.php
-/code/tests/teste_imagem
-vendor/composer/installed.php
-vendor/composer/installed.php
-vendor/
+# Dependências instaladas
+/vendor/
+
+# Ambientes e segredos
 .env
-composer.lock
+.env.*
+!.env.example
+
+# Logs e arquivos temporários
 *.log
-.DS_Store
-docker/db_data/
-composer.json
 *.zip
-testes_SH/TestHelloWorld.php
-public/uploads/padrao.jpg
+.DS_Store
 log.log
-public/uploads/img_68e0445004b992.66805710.png
-/public/uploads
+
+# Dados locais
+/docker/db_data/
+/code/tests/teste_imagem
+/testes_SH/TestHelloWorld.php
+/public/uploads/
+!/public/uploads/.gitkeep
