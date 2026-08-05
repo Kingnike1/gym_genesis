@@ -1,17 +1,43 @@
-vendor/composer/installed.php
-/code/tests/teste_imagem
-vendor/composer/installed.php
-vendor/composer/installed.php
-vendor/
+# Environment files
 .env
-composer.lock
+.env.*
+!.env.example
+
+# Composer dependencies
+/vendor/
+
+# Runtime data
 *.log
+/logs/
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# User uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Test artifacts
+/code/tests/teste_imagem/
+/coverage/
+.phpunit.result.cache
+
+# Local IDE settings
+/.vscode/
+/.idea/
+
+# Operating system files
 .DS_Store
-docker/db_data/
-composer.json
+Thumbs.db
+
+# Docker runtime data
+/docker/db_data/
+
+# Temporary and backup files
+*.bak
+*.beforefix
+*.tmp
+*.temp
+*.swp
+*.swo
 *.zip
-testes_SH/TestHelloWorld.php
-public/uploads/padrao.jpg
-log.log
-public/uploads/img_68e0445004b992.66805710.png
-/public/uploads
+* copy.*
