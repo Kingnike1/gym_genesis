@@ -2,10 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Services\UserService;
-use App\Repositories\UserRepository;
 use App\Helpers\SecurityHelper;
-use App\Middleware\AuthMiddleware;
+use App\Repositories\UserRepository;
+use App\Security\LoginRateLimiter;
+use App\Security\SessionManager;
+use App\Services\UserService;
 
 class AuthController extends Controller
 {
@@ -16,72 +17,79 @@ class AuthController extends Controller
         $this->userService = new UserService(new UserRepository());
     }
 
-    public function login()
+    public function login(): void
     {
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            // Verificar token CSRF
-            $csrfToken = $_POST["csrf_token"] ?? "";
-            if (!SecurityHelper::verifyCSRFToken($csrfToken)) {
-                http_response_code(403);
-                echo "Token CSRF inválido.";
-                exit();
-            }
+        SessionManager::start();
 
-            $email = SecurityHelper::sanitizeInput($_POST["email"] ?? "");
-            $password = $_POST["password"] ?? "";
-
-            // Validar e-mail
-            if (!SecurityHelper::validateEmail($email)) {
-                $this->render("login", ["errorMessage" => "E-mail inválido."]);
-                return;
-            }
-
-            $user = $this->userService->authenticateUser($email, $password);
-
-            if ($user) {
-                // Iniciar sessão e redirecionar para o dashboard apropriado
-                session_start();
-                $_SESSION["user_id"] = $user["idusuario"];
-                $_SESSION["user_email"] = $user["email"];
-                $_SESSION["user_type"] = $user["tipo_usuario"];
-
-                switch ($user["tipo_usuario"]) {
-                    case 1: // Administrador
-                        header("Location: /gym_genesis/admin/dashboard");
-                        break;
-                    case 2: // Professor
-                        header("Location: /gym_genesis/professor/dashboard");
-                        break;
-                    case 3: // Aluno
-                        header("Location: /gym_genesis/student/dashboard");
-                        break;
-                    default:
-                        header("Location: /gym_genesis/login"); // Tipo de usuário desconhecido
-                        break;
-                }
-                exit();
-            } else {
-                // Falha na autenticação
-                $csrfToken = SecurityHelper::generateCSRFToken();
-                $this->render("login", [
-                    "errorMessage" => "E-mail ou senha incorretos.",
-                    "csrf_token" => $csrfToken
-                ]);
-            }
-        } else {
-            // Exibir formulário de login
-            session_start();
-            $csrfToken = SecurityHelper::generateCSRFToken();
-            $this->render("login", ["csrf_token" => $csrfToken]);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->render('login', ['csrf_token' => SecurityHelper::generateCSRFToken()]);
+            return;
         }
+
+        if (!SecurityHelper::verifyCSRFToken((string) ($_POST['csrf_token'] ?? ''))) {
+            http_response_code(403);
+            echo 'Token CSRF inválido.';
+            return;
+        }
+
+        $email = strtolower(SecurityHelper::sanitizeInput((string) ($_POST['email'] ?? '')));
+        $password = (string) ($_POST['password'] ?? '');
+        $client = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $rateLimitKey = $client . '|' . $email;
+
+        if (LoginRateLimiter::tooManyAttempts($rateLimitKey)) {
+            http_response_code(429);
+            $this->render('login', [
+                'errorMessage' => 'Muitas tentativas. Tente novamente em alguns minutos.',
+                'csrf_token' => SecurityHelper::generateCSRFToken(),
+            ]);
+            return;
+        }
+
+        if (!SecurityHelper::validateEmail($email)) {
+            LoginRateLimiter::hit($rateLimitKey);
+            $this->render('login', [
+                'errorMessage' => 'E-mail ou senha incorretos.',
+                'csrf_token' => SecurityHelper::generateCSRFToken(),
+            ]);
+            return;
+        }
+
+        $user = $this->userService->authenticateUser($email, $password);
+        if ($user === null) {
+            LoginRateLimiter::hit($rateLimitKey);
+            $this->render('login', [
+                'errorMessage' => 'E-mail ou senha incorretos.',
+                'csrf_token' => SecurityHelper::generateCSRFToken(),
+            ]);
+            return;
+        }
+
+        LoginRateLimiter::clear($rateLimitKey);
+        SessionManager::authenticate($user);
+
+        $destinations = [
+            1 => '/gym_genesis/admin/dashboard',
+            2 => '/gym_genesis/professor/dashboard',
+            3 => '/gym_genesis/student/dashboard',
+        ];
+
+        header('Location: ' . ($destinations[(int) $user['tipo_usuario']] ?? '/gym_genesis/login'));
+        exit();
     }
 
-    public function logout()
+    public function logout(): void
     {
-        session_start();
-        session_unset();
-        session_destroy();
-        header("Location: /gym_genesis/login");
+        SessionManager::start();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !SecurityHelper::verifyCSRFToken((string) ($_POST['csrf_token'] ?? ''))) {
+            http_response_code(403);
+            echo 'Requisição de logout inválida.';
+            return;
+        }
+
+        SessionManager::logout();
+        header('Location: /gym_genesis/login');
         exit();
     }
 }
