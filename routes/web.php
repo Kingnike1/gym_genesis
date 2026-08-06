@@ -1,11 +1,13 @@
 <?php
 
+use App\Middleware\AcademyContextMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Routes\Router;
 
-$adminOnly = [static fn () => AuthMiddleware::requireUserType(1)];
-$professorOnly = [static fn () => AuthMiddleware::requireUserType(2)];
-$studentOnly = [static fn () => AuthMiddleware::requireUserType(3)];
+$academyContext = static fn () => AcademyContextMiddleware::handle();
+$adminOnly = [static fn () => AuthMiddleware::requireUserType(1), $academyContext];
+$professorOnly = [static fn () => AuthMiddleware::requireUserType(2), $academyContext];
+$studentOnly = [static fn () => AuthMiddleware::requireUserType(3), $academyContext];
 
 Router::get('/', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
