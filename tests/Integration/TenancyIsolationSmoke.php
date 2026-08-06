@@ -11,9 +11,11 @@ $pdo = Database::getConnection();
 $pdo->beginTransaction();
 
 try {
-    $pdo->exec("INSERT INTO academias (nome, status) VALUES ('Academia Teste A', 'ativa'), ('Academia Teste B', 'ativa')");
+    $academy = $pdo->prepare("INSERT INTO academias (nome, status) VALUES (?, 'ativa')");
+    $academy->execute(['Academia Teste A']);
+    $academyA = (int) $pdo->lastInsertId();
+    $academy->execute(['Academia Teste B']);
     $academyB = (int) $pdo->lastInsertId();
-    $academyA = $academyB - 1;
 
     $password = password_hash('tenancy-test', PASSWORD_DEFAULT);
     $stmt = $pdo->prepare('INSERT INTO usuario (senha, email, tipo_usuario) VALUES (?, ?, 1)');
