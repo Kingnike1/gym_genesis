@@ -7,6 +7,8 @@ use RuntimeException;
 
 final class Migrator
 {
+    private const DROP_ALL_MARKER = '-- @drop-all-tables';
+
     public function __construct(
         private readonly PDO $pdo,
         private readonly string $directory
@@ -17,17 +19,26 @@ final class Migrator
     {
         $this->ensureRepository();
         $executed = $this->executed();
-        $applied = [];
+        $pending = [];
 
         foreach ($this->upFiles() as $file) {
             $name = basename($file, '.up.sql');
-            if (isset($executed[$name])) {
-                continue;
+            if (!isset($executed[$name])) {
+                $pending[$name] = $file;
             }
+        }
 
+        if ($pending === []) {
+            return [];
+        }
+
+        $batch = $this->nextBatch();
+        $applied = [];
+
+        foreach ($pending as $name => $file) {
             $this->executeFile($file);
             $statement = $this->pdo->prepare('INSERT INTO schema_migrations (migration, batch) VALUES (?, ?)');
-            $statement->execute([$name, $this->nextBatch()]);
+            $statement->execute([$name, $batch]);
             $applied[] = $name;
         }
 
@@ -53,8 +64,10 @@ final class Migrator
             }
 
             $this->executeFile($downFile);
-            $delete = $this->pdo->prepare('DELETE FROM schema_migrations WHERE migration = ?');
-            $delete->execute([$migration]);
+            if ($this->tableExists('schema_migrations')) {
+                $delete = $this->pdo->prepare('DELETE FROM schema_migrations WHERE migration = ?');
+                $delete->execute([$migration]);
+            }
             $rolledBack[] = $migration;
         }
 
@@ -110,6 +123,11 @@ final class Migrator
             throw new RuntimeException("Não foi possível ler {$file}.");
         }
 
+        if (str_contains($sql, self::DROP_ALL_MARKER)) {
+            $this->dropAllTables();
+            return;
+        }
+
         $sql = $this->normalizeLegacySql($sql);
         $statements = preg_split('/;\s*(?:\r?\n|$)/', $sql) ?: [];
 
@@ -123,12 +141,38 @@ final class Migrator
 
     private function normalizeLegacySql(string $sql): string
     {
-        $database = (string) ($_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'gym_genesis');
         $sql = preg_replace('/CREATE SCHEMA IF NOT EXISTS `[^`]+`[^;]*;/i', '', $sql) ?? $sql;
         $sql = preg_replace('/USE `[^`]+`\s*;/i', '', $sql) ?? $sql;
         $sql = str_replace('`gym_genesis`.', '', $sql);
+        $sql = preg_replace('/\s+VISIBLE\b/i', '', $sql) ?? $sql;
         $sql = str_replace('DEFAULT CHARACTER SET = utf8', 'DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci', $sql);
 
-        return str_replace('CREATE SCHEMA IF NOT EXISTS `' . $database . '`', '', $sql);
+        return $sql;
+    }
+
+    private function dropAllTables(): void
+    {
+        $tables = $this->pdo->query(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()"
+        )->fetchAll(PDO::FETCH_COLUMN);
+
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+        try {
+            foreach ($tables as $table) {
+                $safeTable = str_replace('`', '``', (string) $table);
+                $this->pdo->exec("DROP TABLE IF EXISTS `{$safeTable}`");
+            }
+        } finally {
+            $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
+        }
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?'
+        );
+        $statement->execute([$table]);
+        return (int) $statement->fetchColumn() > 0;
     }
 }
