@@ -5,6 +5,7 @@ namespace App\Services;
 use PDO;
 use PDOException;
 use RuntimeException;
+use Throwable;
 
 final class Database
 {
@@ -41,6 +42,23 @@ final class Database
         }
 
         return self::$pdo;
+    }
+
+    public static function transaction(callable $operation): mixed
+    {
+        $pdo = self::getConnection();
+        $pdo->beginTransaction();
+
+        try {
+            $result = $operation($pdo);
+            $pdo->commit();
+            return $result;
+        } catch (Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $exception;
+        }
     }
 
     public static function resetConnection(): void
