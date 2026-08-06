@@ -14,6 +14,7 @@
         "migrate": "php scripts/migrate.php migrate",
         "migrate:rollback": "php scripts/migrate.php rollback",
         "migrate:status": "php scripts/migrate.php status",
-        "seed": "php scripts/seed.php"
+        "seed": "php scripts/seed.php",
+        "test:tenancy": "php tests/Integration/TenancyIsolationSmoke.php"
     }
 }
