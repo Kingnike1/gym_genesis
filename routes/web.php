@@ -1,304 +1,91 @@
 <?php
 
+use App\Middleware\AuthMiddleware;
 use App\Routes\Router;
 
-// Rotas públicas
-Router::get(
-    uri: '/',
-    callback: function () {
-        echo '<h1>Bem-vindo à Gym Genesis!</h1>';
-        echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
-    }
-);
+$adminOnly = [static fn () => AuthMiddleware::requireUserType(1)];
+$professorOnly = [static fn () => AuthMiddleware::requireUserType(2)];
+$studentOnly = [static fn () => AuthMiddleware::requireUserType(3)];
 
-Router::get(
-    uri: '/home',
-    callback: function () {
-        echo '<h1>Bem-vindo à Gym Genesis!</h1>';
-        echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
-    }
-);
+Router::get('/', static function (): void {
+    echo '<h1>Bem-vindo à Gym Genesis!</h1>';
+    echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
+});
 
-// Rotas de autenticação
-Router::get(
-    uri: '/login',
-    callback: function () {
-        echo '<h1>Página de Login</h1>';
-    }
-);
+Router::get('/home', static function (): void {
+    echo '<h1>Bem-vindo à Gym Genesis!</h1>';
+    echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
+});
 
-Router::post(
-    uri: '/login',
-    callback: 'AuthController@login'
-);
+Router::get('/login', 'AuthController@login');
+Router::post('/login', 'AuthController@login');
+Router::post('/logout', 'AuthController@logout', [static fn () => AuthMiddleware::requireAuth()]);
 
-Router::get(
-    uri: '/logout',
-    callback: 'AuthController@logout'
-);
+Router::group('/admin', $adminOnly, static function (): void {
+    Router::get('/dashboard', 'AdminDashboardController@index');
 
-// Rotas do Administrador
-Router::get(
-    uri: '/admin/dashboard',
-    callback: 'AdminDashboardController@index'
-);
+    Router::get('/users', 'UserController@index');
+    Router::get('/users/create', 'UserController@create');
+    Router::post('/users', 'UserController@store');
+    Router::get('/users/{id:\d+}/edit', 'UserController@edit');
+    Router::put('/users/{id:\d+}', 'UserController@update');
+    Router::delete('/users/{id:\d+}', 'UserController@delete');
 
-// Rotas do Professor
-Router::get(
-    uri: '/professor/dashboard',
-    callback: 'ProfessorDashboardController@index'
-);
+    Router::get('/plans', 'PlanController@index');
+    Router::get('/plans/create', 'PlanController@create');
+    Router::post('/plans', 'PlanController@store');
+    Router::get('/plans/{id:\d+}/edit', 'PlanController@edit');
+    Router::put('/plans/{id:\d+}', 'PlanController@update');
+    Router::delete('/plans/{id:\d+}', 'PlanController@delete');
 
-// Rotas do Aluno
-Router::get(
-    uri: '/student/dashboard',
-    callback: 'StudentDashboardController@index'
-);
+    Router::get('/products', 'ProductController@index');
+    Router::get('/products/create', 'ProductController@create');
+    Router::post('/products', 'ProductController@store');
+    Router::get('/products/{id:\d+}/edit', 'ProductController@edit');
+    Router::put('/products/{id:\d+}', 'ProductController@update');
+    Router::delete('/products/{id:\d+}', 'ProductController@delete');
 
-// Exemplo de rota com parâmetro (ainda não implementado no Router, mas para referência futura)
-// Router::get('/users/{id}', 'UserController@show');
+    Router::get('/orders', 'OrderController@index');
+    Router::get('/orders/{id:\d+}', 'OrderController@show');
+    Router::patch('/orders/{id:\d+}/status', 'OrderController@updateStatus');
+});
 
-// Rotas de Gerenciamento de Usuários (Admin)
-Router::get(
-    uri: '/admin/users',
-    callback: 'UserController@index'
-);
+Router::group('/professor', $professorOnly, static function (): void {
+    Router::get('/dashboard', 'ProfessorDashboardController@index');
 
-Router::get(
-    uri: '/admin/users/create',
-    callback: 'UserController@create'
-);
+    Router::get('/treinos', 'TreinoController@index');
+    Router::get('/treinos/create', 'TreinoController@create');
+    Router::post('/treinos', 'TreinoController@store');
+    Router::get('/treinos/{id:\d+}/edit', 'TreinoController@edit');
+    Router::put('/treinos/{id:\d+}', 'TreinoController@update');
+    Router::delete('/treinos/{id:\d+}', 'TreinoController@delete');
 
-Router::post(
-    uri: '/admin/users',
-    callback: 'UserController@store'
-);
+    Router::get('/dietas', 'DietaController@index');
+    Router::get('/dietas/create', 'DietaController@create');
+    Router::post('/dietas', 'DietaController@store');
+    Router::get('/dietas/{id:\d+}/edit', 'DietaController@edit');
+    Router::put('/dietas/{id:\d+}', 'DietaController@update');
+    Router::delete('/dietas/{id:\d+}', 'DietaController@delete');
+});
 
-Router::get(
-    uri: '/admin/users/edit/{id}',
-    callback: 'UserController@edit'
-);
+Router::group('/student', $studentOnly, static function (): void {
+    Router::get('/dashboard', 'StudentDashboardController@index');
 
-Router::post(
-    uri: '/admin/users/{id}',
-    callback: 'UserController@update'
-);
+    Router::get('/treinos', 'StudentTreinoController@index');
+    Router::get('/treinos/{id:\d+}', 'StudentTreinoController@show');
 
-Router::get(
-    uri: '/admin/users/delete/{id}',
-    callback: 'UserController@delete'
-);
+    Router::get('/dietas', 'StudentDietaController@index');
+    Router::get('/dietas/{id:\d+}', 'StudentDietaController@show');
 
-// Rotas de Gerenciamento de Planos (Admin)
-Router::get(
-    uri: '/admin/plans',
-    callback: 'PlanController@index'
-);
+    Router::get('/perfil', 'StudentProfileController@show');
+    Router::put('/perfil', 'StudentProfileController@update');
 
-Router::get(
-    uri: '/admin/plans/create',
-    callback: 'PlanController@create'
-);
-
-Router::post(
-    uri: '/admin/plans',
-    callback: 'PlanController@store'
-);
-
-Router::get(
-    uri: '/admin/plans/edit/{id}',
-    callback: 'PlanController@edit'
-);
-
-Router::post(
-    uri: '/admin/plans/{id}',
-    callback: 'PlanController@update'
-);
-
-Router::get(
-    uri: '/admin/plans/delete/{id}',
-    callback: 'PlanController@delete'
-);
-
-// Rotas de Gerenciamento de Produtos (Admin)
-Router::get(
-    uri: '/admin/products',
-    callback: 'ProductController@index'
-);
-
-Router::get(
-    uri: '/admin/products/create',
-    callback: 'ProductController@create'
-);
-
-Router::post(
-    uri: '/admin/products',
-    callback: 'ProductController@store'
-);
-
-Router::get(
-    uri: '/admin/products/edit/{id}',
-    callback: 'ProductController@edit'
-);
-
-Router::post(
-    uri: '/admin/products/{id}',
-    callback: 'ProductController@update'
-);
-
-Router::get(
-    uri: '/admin/products/delete/{id}',
-    callback: 'ProductController@delete'
-);
-
-// Rotas de Gerenciamento de Pedidos (Admin)
-Router::get(
-    uri: '/admin/orders',
-    callback: 'OrderController@index'
-);
-
-Router::get(
-    uri: '/admin/orders/{id}',
-    callback: 'OrderController@show'
-);
-
-Router::post(
-    uri: '/admin/orders/{id}/status',
-    callback: 'OrderController@updateStatus'
-);
-
-// Rotas de Gerenciamento de Treinos (Professor)
-Router::get(
-    uri: '/professor/treinos',
-    callback: 'TreinoController@index'
-);
-
-Router::get(
-    uri: '/professor/treinos/create',
-    callback: 'TreinoController@create'
-);
-
-Router::post(
-    uri: '/professor/treinos',
-    callback: 'TreinoController@store'
-);
-
-Router::get(
-    uri: '/professor/treinos/edit/{id}',
-    callback: 'TreinoController@edit'
-);
-
-Router::post(
-    uri: '/professor/treinos/{id}',
-    callback: 'TreinoController@update'
-);
-
-Router::get(
-    uri: '/professor/treinos/delete/{id}',
-    callback: 'TreinoController@delete'
-);
-
-// Rotas de Gerenciamento de Dietas (Professor)
-Router::get(
-    uri: '/professor/dietas',
-    callback: 'DietaController@index'
-);
-
-Router::get(
-    uri: '/professor/dietas/create',
-    callback: 'DietaController@create'
-);
-
-Router::post(
-    uri: '/professor/dietas',
-    callback: 'DietaController@store'
-);
-
-Router::get(
-    uri: '/professor/dietas/edit/{id}',
-    callback: 'DietaController@edit'
-);
-
-Router::post(
-    uri: '/professor/dietas/{id}',
-    callback: 'DietaController@update'
-);
-
-Router::get(
-    uri: '/professor/dietas/delete/{id}',
-    callback: 'DietaController@delete'
-);
-
-// Rotas do Dashboard do Aluno
-
-Router::get(
-    uri: '/student/treinos',
-    callback: 'StudentTreinoController@index'
-);
-
-Router::get(
-    uri: '/student/treinos/{id}',
-    callback: 'StudentTreinoController@show'
-);
-
-Router::get(
-    uri: '/student/dietas',
-    callback: 'StudentDietaController@index'
-);
-
-Router::get(
-    uri: '/student/dietas/{id}',
-    callback: 'StudentDietaController@show'
-);
-
-// Rotas de Perfil do Aluno
-Router::get(
-    uri: '/student/perfil',
-    callback: 'StudentProfileController@show'
-);
-
-Router::post(
-    uri: '/student/perfil',
-    callback: 'StudentProfileController@update'
-);
-
-// Rotas de Progresso do Aluno
-Router::get(
-    uri: '/student/progresso',
-    callback: 'StudentProgressController@index'
-);
-
-Router::get(
-    uri: '/student/avaliacoes',
-    callback: 'StudentProgressController@avaliacoes'
-);
-
-Router::get(
-    uri: '/student/avaliacoes/create',
-    callback: 'StudentProgressController@create'
-);
-
-Router::post(
-    uri: '/student/avaliacoes',
-    callback: 'StudentProgressController@store'
-);
-
-Router::get(
-    uri: '/student/avaliacoes/{id}',
-    callback: 'StudentProgressController@show'
-);
-
-Router::get(
-    uri: '/student/avaliacoes/{id}/edit',
-    callback: 'StudentProgressController@edit'
-);
-
-Router::post(
-    uri: '/student/avaliacoes/{id}',
-    callback: 'StudentProgressController@update'
-);
-
-Router::get(
-    uri: '/student/avaliacoes/{id}/delete',
-    callback: 'StudentProgressController@delete'
-);
+    Router::get('/progresso', 'StudentProgressController@index');
+    Router::get('/avaliacoes', 'StudentProgressController@avaliacoes');
+    Router::get('/avaliacoes/create', 'StudentProgressController@create');
+    Router::post('/avaliacoes', 'StudentProgressController@store');
+    Router::get('/avaliacoes/{id:\d+}', 'StudentProgressController@show');
+    Router::get('/avaliacoes/{id:\d+}/edit', 'StudentProgressController@edit');
+    Router::put('/avaliacoes/{id:\d+}', 'StudentProgressController@update');
+    Router::delete('/avaliacoes/{id:\d+}', 'StudentProgressController@delete');
+});
