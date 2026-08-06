@@ -35,3 +35,19 @@ Formato recomendado:
 Os testes não executados nunca devem ser omitidos. Eles permanecem registrados em `MANUAL.md` ou em `EXECUTED.md` com status `BLOQUEADO/PENDENTE`, para serem executados posteriormente.
 
 Quando um teste manual for realizado pelo responsável do projeto, registrar o resultado no mesmo arquivo, preservando o histórico.
+
+## Resumo obrigatório por stack
+
+Cada stack deve poder ser resumida assim:
+
+```text
+Stack 09: testes técnicos
+1. Nome do teste — status
+2. Nome do teste — status
+
+Testes manuais feitos/pedidos ao responsável:
+1. Nome do teste — status
+2. Nome do teste — status
+```
+
+Nenhum teste deve ser considerado aprovado sem resultado registrado.
