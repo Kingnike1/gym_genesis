@@ -2,6 +2,7 @@
 
 namespace App\Middleware;
 
+use App\Routes\Router;
 use App\Security\SessionManager;
 
 class AuthMiddleware
@@ -21,7 +22,7 @@ class AuthMiddleware
     public static function requireAuth(): void
     {
         if (!self::isAuthenticated()) {
-            header('Location: /gym_genesis/login');
+            header('Location: ' . Router::url('/login'));
             exit();
         }
     }
