@@ -54,9 +54,9 @@ final class Router
     public static function url(string $path = '/'): string
     {
         $basePath = self::basePath();
-        $path = '/' . ltrim($path, '/');
+        $path = self::normalizePath($path);
 
-        return ($basePath === '/' ? '' : $basePath) . ($path === '//' ? '/' : $path);
+        return ($basePath === '/' ? '' : $basePath) . $path;
     }
 
     public static function dispatch(): void
@@ -118,23 +118,24 @@ final class Router
     private static function compilePattern(string $path): array
     {
         $parameters = [];
-        $quoted = preg_quote($path, '#');
+        $pattern = '';
+        $offset = 0;
 
-        $pattern = preg_replace_callback(
-            '/\\\{([a-zA-Z_][a-zA-Z0-9_]*)(?:\\:([^}]+))?\\\}/',
-            static function (array $matches) use (&$parameters): string {
-                $name = $matches[1];
-                $constraint = isset($matches[2]) ? str_replace('\\', '', $matches[2]) : '[^/]+';
-                $parameters[] = $name;
+        preg_match_all('/\{([a-zA-Z_][a-zA-Z0-9_]*)(?::([^}]+))?\}/', $path, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
-                return '(?P<' . $name . '>' . $constraint . ')';
-            },
-            $quoted
-        );
+        foreach ($matches as $match) {
+            $token = $match[0][0];
+            $position = $match[0][1];
+            $name = $match[1][0];
+            $constraint = isset($match[2][0]) && $match[2][0] !== '' ? $match[2][0] : '[^/]+';
 
-        if ($pattern === null) {
-            throw new RuntimeException('Não foi possível compilar a rota: ' . $path);
+            $pattern .= preg_quote(substr($path, $offset, $position - $offset), '#');
+            $pattern .= '(?P<' . $name . '>' . $constraint . ')';
+            $parameters[] = $name;
+            $offset = $position + strlen($token);
         }
+
+        $pattern .= preg_quote(substr($path, $offset), '#');
 
         return ['#^' . $pattern . '$#', $parameters];
     }
