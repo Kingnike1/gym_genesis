@@ -1,5 +1,6 @@
 {
     "require": {
+        "php": "^8.2",
         "phpmailer/phpmailer": "^6.8",
         "vlucas/phpdotenv": "^5.6"
     },
@@ -8,5 +9,11 @@
             "App\\": "app/",
             "App\\Routes\\": "routes/"
         }
+    },
+    "scripts": {
+        "migrate": "php scripts/migrate.php migrate",
+        "migrate:rollback": "php scripts/migrate.php rollback",
+        "migrate:status": "php scripts/migrate.php status",
+        "seed": "php scripts/seed.php"
     }
 }
