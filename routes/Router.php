@@ -6,6 +6,8 @@ use RuntimeException;
 
 final class Router
 {
+    private const OVERRIDABLE_METHODS = ['PUT', 'PATCH', 'DELETE'];
+
     private static array $routes = [];
     private static string $groupPrefix = '';
     private static array $groupMiddleware = [];
@@ -61,7 +63,7 @@ final class Router
 
     public static function dispatch(): void
     {
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $method = self::requestMethod();
         $path = self::requestPath();
         $allowedMethods = [];
 
@@ -159,6 +161,19 @@ final class Router
         }
 
         (new $class())->{$method}(...$parameters);
+    }
+
+    private static function requestMethod(): string
+    {
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+
+        if ($method !== 'POST') {
+            return $method;
+        }
+
+        $override = strtoupper((string) ($_POST['_method'] ?? ''));
+
+        return in_array($override, self::OVERRIDABLE_METHODS, true) ? $override : $method;
     }
 
     private static function requestPath(): string
