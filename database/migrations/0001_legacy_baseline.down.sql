@@ -1,0 +1,2 @@
+-- @drop-all-tables
+-- Exclusivo para bancos descartáveis de desenvolvimento e testes.
