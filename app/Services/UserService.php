@@ -2,51 +2,49 @@
 
 namespace App\Services;
 
+use App\DTOs\CreateUserData;
+use App\DTOs\UpdateUserData;
 use App\Repositories\UserRepository;
 
-class UserService
+final class UserService
 {
-    private UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function __construct(private readonly UserRepository $userRepository)
     {
-        $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $password, string $email, int $userType): ?int
+    public function registerUser(CreateUserData $data): ?int
     {
-        return $this->userRepository->create(password_hash($password, PASSWORD_DEFAULT), $email, $userType);
+        return $this->userRepository->create(
+            password_hash($data->password, PASSWORD_DEFAULT),
+            strtolower(trim($data->email)),
+            $data->role
+        );
     }
 
     public function authenticateUser(string $email, string $password): ?array
     {
-        $user = $this->userRepository->findByEmail($email);
-        if (!$user || !password_verify($password, $user['senha'])) {
+        $user = $this->userRepository->findForAuthentication(strtolower(trim($email)));
+        if (!$user || $user['status'] !== 'ativo' || !password_verify($password, $user['senha'])) {
             return null;
         }
 
         if (password_needs_rehash($user['senha'], PASSWORD_DEFAULT)) {
             $newHash = password_hash($password, PASSWORD_DEFAULT);
-            $this->userRepository->update((int) $user['idusuario'], $newHash, $user['email'], (int) $user['tipo_usuario']);
+            $this->userRepository->updatePasswordHash((int) $user['idusuario'], $newHash);
             $user['senha'] = $newHash;
         }
 
+        $this->userRepository->recordLogin((int) $user['idusuario']);
         return $user;
     }
 
-    public function updateUser(int $id, string $password, string $email, int $userType): bool
+    public function updateUser(int $id, UpdateUserData $data): bool
     {
-        $currentUser = $this->userRepository->findById($id);
-        if (!$currentUser) {
-            return false;
+        if ($data->password !== null && $data->password !== '') {
+            $this->userRepository->updatePasswordHash($id, password_hash($data->password, PASSWORD_DEFAULT));
         }
 
-        $passwordHash = $currentUser['senha'];
-        if ($password !== '' && !password_verify($password, $currentUser['senha'])) {
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        }
-
-        return $this->userRepository->update($id, $passwordHash, $email, $userType);
+        return $this->userRepository->update($id, strtolower(trim($data->email)), $data->role, $data->active);
     }
 
     public function deleteUser(int $id): bool
@@ -61,7 +59,7 @@ class UserService
 
     public function getUserByEmail(string $email): ?array
     {
-        return $this->userRepository->findByEmail($email);
+        return $this->userRepository->findByEmail(strtolower(trim($email)));
     }
 
     public function getAllUsers(): array
@@ -71,17 +69,6 @@ class UserService
 
     public function updateUserPassword(int $id, string $passwordHash): bool
     {
-        $currentUser = $this->userRepository->findById($id);
-        return $currentUser
-            ? $this->userRepository->update($id, $passwordHash, $currentUser['email'], (int) $currentUser['tipo_usuario'])
-            : false;
-    }
-
-    public function updateUserEmail(int $id, string $email): bool
-    {
-        $currentUser = $this->userRepository->findById($id);
-        return $currentUser
-            ? $this->userRepository->update($id, $currentUser['senha'], $email, (int) $currentUser['tipo_usuario'])
-            : false;
+        return $this->userRepository->updatePasswordHash($id, $passwordHash);
     }
 }

@@ -1,9 +1,10 @@
 # Gym Genesis — Estratégia de Registro de Testes
 
-A partir da Stack 09, toda stack deve manter dois arquivos separados de testes:
+A partir da Stack 09, toda stack deve manter três arquivos separados:
 
-- `tests/stack-XX/EXECUTED.md`: testes técnicos/automatizados já executados pelo desenvolvimento.
-- `tests/stack-XX/MANUAL.md`: testes manuais que devem ser executados pelo responsável pelo projeto.
+- `tests/stack-XX/EXECUTED.md`: somente testes realmente executados.
+- `tests/stack-XX/PENDING.md`: testes técnicos/automatizados criados ou planejados, mas ainda não executados.
+- `tests/stack-XX/MANUAL.md`: testes que devem ser executados manualmente pelo responsável pelo projeto.
 
 Cada teste deve informar obrigatoriamente:
 
@@ -32,22 +33,19 @@ Formato recomendado:
 **Status:** PENDENTE
 ```
 
-Os testes não executados nunca devem ser omitidos. Eles permanecem registrados em `MANUAL.md` ou em `EXECUTED.md` com status `BLOQUEADO/PENDENTE`, para serem executados posteriormente.
-
-Quando um teste manual for realizado pelo responsável do projeto, registrar o resultado no mesmo arquivo, preservando o histórico.
+Um teste não executado nunca deve aparecer como aprovado em `EXECUTED.md`. Quando um teste pendente for executado, ele deve ser movido para `EXECUTED.md` com o resultado registrado. Testes manuais permanecem em `MANUAL.md` e devem receber o resultado informado pelo responsável.
 
 ## Resumo obrigatório por stack
 
-Cada stack deve poder ser resumida assim:
-
 ```text
-Stack 09: testes técnicos
+Stack 09: testes executados
 1. Nome do teste — status
-2. Nome do teste — status
 
-Testes manuais feitos/pedidos ao responsável:
+Testes técnicos pendentes
 1. Nome do teste — status
-2. Nome do teste — status
+
+Testes manuais para o responsável
+1. Nome do teste — status
 ```
 
 Nenhum teste deve ser considerado aprovado sem resultado registrado.

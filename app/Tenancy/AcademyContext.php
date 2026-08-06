@@ -35,9 +35,7 @@ final class AcademyContext
             throw new RuntimeException('Usuário não possui vínculo ativo com uma academia.');
         }
 
-        $_SESSION['academia_id'] = (int) self::$current['academia_id'];
-        $_SESSION['unidade_id'] = self::$current['unidade_id'] !== null ? (int) self::$current['unidade_id'] : null;
-
+        self::applyToSession(self::$current);
         return self::$current;
     }
 
@@ -52,6 +50,11 @@ final class AcademyContext
         return $unitId !== null ? (int) $unitId : null;
     }
 
+    public static function role(): int
+    {
+        return (int) self::current()['papel'];
+    }
+
     public static function select(int $academyId): void
     {
         SessionManager::start();
@@ -63,14 +66,21 @@ final class AcademyContext
         }
 
         self::$current = $membership;
-        $_SESSION['academia_id'] = (int) $membership['academia_id'];
-        $_SESSION['unidade_id'] = $membership['unidade_id'] !== null ? (int) $membership['unidade_id'] : null;
+        self::applyToSession($membership);
+        session_regenerate_id(true);
     }
 
     public static function clear(): void
     {
         self::$current = null;
-        unset($_SESSION['academia_id'], $_SESSION['unidade_id']);
+        unset($_SESSION['academia_id'], $_SESSION['unidade_id'], $_SESSION['user_type']);
+    }
+
+    private static function applyToSession(array $membership): void
+    {
+        $_SESSION['academia_id'] = (int) $membership['academia_id'];
+        $_SESSION['unidade_id'] = $membership['unidade_id'] !== null ? (int) $membership['unidade_id'] : null;
+        $_SESSION['user_type'] = (int) $membership['papel'];
     }
 
     private static function loadMembership(int $userId, ?int $academyId): ?array
@@ -79,12 +89,14 @@ final class AcademyContext
             return null;
         }
 
-        $sql = 'SELECT au.academia_id, au.unidade_id, a.nome, a.nome_fantasia, a.status
+        $sql = 'SELECT au.academia_id, au.unidade_id, au.papel, a.nome, a.nome_fantasia, a.status
                 FROM academia_usuario au
                 INNER JOIN academias a ON a.idacademia = au.academia_id
+                INNER JOIN usuario u ON u.idusuario = au.usuario_id
                 WHERE au.usuario_id = :usuario_id
                   AND au.academia_id = :academia_id
                   AND au.ativo = 1
+                  AND u.status = \'ativo\'
                   AND a.status = \'ativa\'
                 LIMIT 1';
 
@@ -97,11 +109,13 @@ final class AcademyContext
 
     private static function loadPrincipalMembership(int $userId): ?array
     {
-        $sql = 'SELECT au.academia_id, au.unidade_id, a.nome, a.nome_fantasia, a.status
+        $sql = 'SELECT au.academia_id, au.unidade_id, au.papel, a.nome, a.nome_fantasia, a.status
                 FROM academia_usuario au
                 INNER JOIN academias a ON a.idacademia = au.academia_id
+                INNER JOIN usuario u ON u.idusuario = au.usuario_id
                 WHERE au.usuario_id = :usuario_id
                   AND au.ativo = 1
+                  AND u.status = \'ativo\'
                   AND a.status = \'ativa\'
                 ORDER BY au.is_principal DESC, au.created_at ASC
                 LIMIT 1';
