@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Helpers\SecurityHelper;
 use App\Repositories\UserRepository;
+use App\Routes\Router;
 use App\Security\LoginRateLimiter;
 use App\Security\SessionManager;
 use App\Services\UserService;
@@ -69,12 +70,12 @@ class AuthController extends Controller
         SessionManager::authenticate($user);
 
         $destinations = [
-            1 => '/gym_genesis/admin/dashboard',
-            2 => '/gym_genesis/professor/dashboard',
-            3 => '/gym_genesis/student/dashboard',
+            1 => '/admin/dashboard',
+            2 => '/professor/dashboard',
+            3 => '/student/dashboard',
         ];
 
-        header('Location: ' . ($destinations[(int) $user['tipo_usuario']] ?? '/gym_genesis/login'));
+        header('Location: ' . Router::url($destinations[(int) $user['tipo_usuario']] ?? '/login'));
         exit();
     }
 
@@ -89,7 +90,7 @@ class AuthController extends Controller
         }
 
         SessionManager::logout();
-        header('Location: /gym_genesis/login');
+        header('Location: ' . Router::url('/login'));
         exit();
     }
 }
