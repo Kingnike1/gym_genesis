@@ -48,7 +48,7 @@ class UserRepository extends BaseRepository
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT u.idusuario, u.email, u.status, u.last_login_at, u.created_at, u.updated_at, au.papel, au.ativo AS vinculo_ativo, au.unidade_id FROM usuario u INNER JOIN academia_usuario au ON au.usuario_id = u.idusuario WHERE u.idusuario = ? AND au.academia_id = ? LIMIT 1');
+        $stmt = $this->db->prepare('SELECT u.idusuario, u.email, u.status, u.last_login_at, u.created_at, u.updated_at, au.papel, au.papel AS tipo_usuario, au.ativo AS vinculo_ativo, au.unidade_id FROM usuario u INNER JOIN academia_usuario au ON au.usuario_id = u.idusuario WHERE u.idusuario = ? AND au.academia_id = ? LIMIT 1');
         $stmt->execute([$id, AcademyContext::id()]);
         $user = $stmt->fetch();
         return $user ?: null;
@@ -102,7 +102,7 @@ class UserRepository extends BaseRepository
 
     public function getAllUsers(): array
     {
-        $stmt = $this->db->prepare('SELECT u.idusuario, u.email, u.status, u.last_login_at, u.created_at, au.papel, au.ativo AS vinculo_ativo, au.unidade_id FROM usuario u INNER JOIN academia_usuario au ON au.usuario_id = u.idusuario WHERE au.academia_id = ? ORDER BY u.idusuario');
+        $stmt = $this->db->prepare('SELECT u.idusuario, u.email, u.status, u.last_login_at, u.created_at, au.papel, au.papel AS tipo_usuario, au.ativo AS vinculo_ativo, au.unidade_id FROM usuario u INNER JOIN academia_usuario au ON au.usuario_id = u.idusuario WHERE au.academia_id = ? ORDER BY u.idusuario');
         $stmt->execute([AcademyContext::id()]);
         return $stmt->fetchAll();
     }
