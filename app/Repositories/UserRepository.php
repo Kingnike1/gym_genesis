@@ -29,7 +29,10 @@ class UserRepository extends BaseRepository
 
     public function findForAuthentication(string $email): ?array
     {
-        $stmt = $this->db->prepare("SELECT idusuario, email, senha, status FROM usuario WHERE email = ? LIMIT 1");
+        $sql = "SELECT u.idusuario, u.email, u.senha, u.status,
+                       COALESCE((SELECT au.papel FROM academia_usuario au WHERE au.usuario_id = u.idusuario AND au.ativo = 1 ORDER BY au.is_principal DESC, au.created_at ASC LIMIT 1), u.tipo_usuario) AS tipo_usuario
+                FROM usuario u WHERE u.email = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         return $user ?: null;
@@ -92,7 +95,7 @@ class UserRepository extends BaseRepository
                 return true;
             }
 
-            $stmt = $this->db->prepare('UPDATE usuario SET status = \'inativo\' WHERE idusuario = ?');
+            $stmt = $this->db->prepare("UPDATE usuario SET status = 'inativo' WHERE idusuario = ?");
             return $stmt->execute([$id]);
         });
     }
