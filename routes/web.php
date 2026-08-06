@@ -22,6 +22,7 @@ Router::get('/home', static function (): void {
 Router::get('/login', 'AuthController@login');
 Router::post('/login', 'AuthController@login');
 Router::post('/logout', 'AuthController@logout', [static fn () => AuthMiddleware::requireAuth()]);
+Router::post('/academy/select', 'AcademyContextController@select', [static fn () => AuthMiddleware::requireAuth()]);
 
 Router::group('/admin', $adminOnly, static function (): void {
     Router::get('/dashboard', 'AdminDashboardController@index');
