@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Helpers\SecurityHelper;
-use App\Repositories\UserRepository;
 use App\Routes\Router;
 use App\Security\LoginRateLimiter;
 use App\Security\SessionManager;
@@ -11,11 +10,9 @@ use App\Services\UserService;
 
 class AuthController extends Controller
 {
-    private UserService $userService;
-
-    public function __construct()
-    {
-        $this->userService = new UserService(new UserRepository());
+    public function __construct(
+        private readonly UserService $userService
+    ) {
     }
 
     public function login(): void
