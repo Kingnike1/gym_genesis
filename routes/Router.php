@@ -2,73 +2,188 @@
 
 namespace App\Routes;
 
-class Router
+use RuntimeException;
+
+final class Router
 {
-    protected static $routes = [];
+    private static array $routes = [];
+    private static string $groupPrefix = '';
+    private static array $groupMiddleware = [];
 
-    public static function get($uri, $callback)
+    public static function get(string $uri, callable|string $callback, array $middleware = []): void
     {
-        $uri = trim($uri, '/');
-        self::$routes['GET'][$uri] = $callback;
+        self::add('GET', $uri, $callback, $middleware);
     }
 
-    public static function post($uri, $callback)
+    public static function post(string $uri, callable|string $callback, array $middleware = []): void
     {
-        $uri = trim($uri, '/');
-        self::$routes['POST'][$uri] = $callback;
+        self::add('POST', $uri, $callback, $middleware);
     }
 
-    public static function dispatch()
+    public static function put(string $uri, callable|string $callback, array $middleware = []): void
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $method = $_SERVER['REQUEST_METHOD'];
+        self::add('PUT', $uri, $callback, $middleware);
+    }
 
-        // 🔥 REMOVE automaticamente /public da URL
-        $scriptName = dirname($_SERVER['SCRIPT_NAME']); 
-        // Ex: /public
+    public static function patch(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('PATCH', $uri, $callback, $middleware);
+    }
 
-        if ($scriptName !== '/' && strpos($uri, $scriptName) === 0) {
-            $uri = substr($uri, strlen($scriptName));
+    public static function delete(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('DELETE', $uri, $callback, $middleware);
+    }
+
+    public static function group(string $prefix, array $middleware, callable $routes): void
+    {
+        $previousPrefix = self::$groupPrefix;
+        $previousMiddleware = self::$groupMiddleware;
+
+        self::$groupPrefix = self::normalizePath($previousPrefix . '/' . trim($prefix, '/'));
+        self::$groupMiddleware = [...$previousMiddleware, ...$middleware];
+
+        try {
+            $routes();
+        } finally {
+            self::$groupPrefix = $previousPrefix;
+            self::$groupMiddleware = $previousMiddleware;
         }
+    }
 
-        $uri = trim($uri, '/');
+    public static function url(string $path = '/'): string
+    {
+        $basePath = self::basePath();
+        $path = '/' . ltrim($path, '/');
 
-        foreach (self::$routes[$method] ?? [] as $route => $callback) {
+        return ($basePath === '/' ? '' : $basePath) . ($path === '//' ? '/' : $path);
+    }
 
-            $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
+    public static function dispatch(): void
+    {
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $path = self::requestPath();
+        $allowedMethods = [];
 
-            if (preg_match('#^' . $pattern . '$#', $uri, $matches)) {
-                array_shift($matches);
-
-                if (is_callable($callback)) {
-                    call_user_func_array($callback, $matches);
-
-                } elseif (is_string($callback)) {
-
-                    list($controller, $action) = explode('@', $callback);
-                    $controller = 'App\\Controllers\\' . $controller;
-
-                    if (class_exists($controller)) {
-                        $instance = new $controller();
-
-                        if (method_exists($instance, $action)) {
-                            call_user_func_array([$instance, $action], $matches);
-                            return;
-                        }
-                    }
-
-                    self::handleNotFound();
-                    return;
-                }
+        foreach (self::$routes as $route) {
+            if (!preg_match($route['pattern'], $path, $matches)) {
+                continue;
             }
+
+            if ($route['method'] !== $method) {
+                $allowedMethods[] = $route['method'];
+                continue;
+            }
+
+            $parameters = [];
+            foreach ($route['parameters'] as $name) {
+                $parameters[] = $matches[$name] ?? null;
+            }
+
+            foreach ($route['middleware'] as $middleware) {
+                self::invoke($middleware, $parameters);
+            }
+
+            self::invoke($route['callback'], $parameters);
+            return;
         }
 
-        self::handleNotFound();
-    }
+        if ($allowedMethods !== []) {
+            $allowedMethods = array_values(array_unique($allowedMethods));
+            header('Allow: ' . implode(', ', $allowedMethods));
+            http_response_code(405);
+            echo '<h1>405 - Método Não Permitido</h1>';
+            return;
+        }
 
-    protected static function handleNotFound()
-    {
         http_response_code(404);
         echo '<h1>404 - Página Não Encontrada</h1>';
+    }
+
+    private static function add(string $method, string $uri, callable|string $callback, array $middleware): void
+    {
+        $path = self::normalizePath(self::$groupPrefix . '/' . trim($uri, '/'));
+        [$pattern, $parameters] = self::compilePattern($path);
+
+        self::$routes[] = [
+            'method' => $method,
+            'path' => $path,
+            'pattern' => $pattern,
+            'parameters' => $parameters,
+            'callback' => $callback,
+            'middleware' => [...self::$groupMiddleware, ...$middleware],
+        ];
+    }
+
+    private static function compilePattern(string $path): array
+    {
+        $parameters = [];
+        $quoted = preg_quote($path, '#');
+
+        $pattern = preg_replace_callback(
+            '/\\\{([a-zA-Z_][a-zA-Z0-9_]*)(?:\\:([^}]+))?\\\}/',
+            static function (array $matches) use (&$parameters): string {
+                $name = $matches[1];
+                $constraint = isset($matches[2]) ? str_replace('\\', '', $matches[2]) : '[^/]+';
+                $parameters[] = $name;
+
+                return '(?P<' . $name . '>' . $constraint . ')';
+            },
+            $quoted
+        );
+
+        if ($pattern === null) {
+            throw new RuntimeException('Não foi possível compilar a rota: ' . $path);
+        }
+
+        return ['#^' . $pattern . '$#', $parameters];
+    }
+
+    private static function invoke(callable|string $handler, array $parameters): void
+    {
+        if (is_callable($handler)) {
+            $handler(...$parameters);
+            return;
+        }
+
+        if (!str_contains($handler, '@')) {
+            throw new RuntimeException('Handler de rota inválido: ' . $handler);
+        }
+
+        [$class, $method] = explode('@', $handler, 2);
+        $class = str_contains($class, '\\') ? $class : 'App\\Controllers\\' . $class;
+
+        if (!class_exists($class) || !method_exists($class, $method)) {
+            throw new RuntimeException('Handler de rota não encontrado: ' . $handler);
+        }
+
+        (new $class())->{$method}(...$parameters);
+    }
+
+    private static function requestPath(): string
+    {
+        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+        $basePath = self::basePath();
+
+        if ($basePath !== '/' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
+            $path = substr($path, strlen($basePath)) ?: '/';
+        }
+
+        return self::normalizePath($path);
+    }
+
+    private static function basePath(): string
+    {
+        $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+        $basePath = dirname($scriptName);
+
+        return self::normalizePath($basePath === '.' ? '/' : $basePath);
+    }
+
+    private static function normalizePath(string $path): string
+    {
+        $path = '/' . trim(preg_replace('#/+#', '/', $path) ?? '/', '/');
+
+        return $path === '' ? '/' : $path;
     }
 }
