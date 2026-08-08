@@ -76,6 +76,8 @@ Router::group('/student', $studentOnly, static function (): void {
 
     Router::get('/treinos', 'StudentTreinoController@index');
     Router::get('/treinos/{id:\d+}', 'StudentTreinoController@show');
+    Router::post('/treinos/{id:\d+}/executions', 'StudentTreinoController@startExecution');
+    Router::post('/treino-executions/{id:\d+}/finish', 'StudentTreinoController@finishExecution');
 
     Router::get('/dietas', 'StudentDietaController@index');
     Router::get('/dietas/{id:\d+}', 'StudentDietaController@show');
