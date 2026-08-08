@@ -3,12 +3,11 @@
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
-use App\Repositories\DietaRepository;
 use App\Services\DietaService;
 
 class DietaController extends Controller
 {
-    public function __construct(private readonly DietaService $dietaService = new DietaService(new DietaRepository()))
+    public function __construct(private readonly DietaService $dietaService)
     {
     }
 
