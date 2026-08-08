@@ -2,87 +2,84 @@
 
 namespace App\Controllers;
 
+use App\Middleware\AuthMiddleware;
 use App\Services\DietaService;
-use App\Repositories\DietaRepository;
 
 class DietaController extends Controller
 {
-    private DietaService $dietaService;
-
-    public function __construct()
+    public function __construct(private readonly DietaService $dietaService)
     {
-        $this->dietaService = new DietaService(new DietaRepository());
     }
 
     public function index(): void
     {
-        $dietas = $this->dietaService->getAllDietas();
-        $this->render("professor/dietas/index", ["dietas" => $dietas]);
+        $userId = AuthMiddleware::getUserId();
+        $dietas = $userId ? $this->dietaService->getDietasByResponsibleUserId($userId) : [];
+        $this->render('professor/dietas/index', ['dietas' => $dietas]);
     }
 
     public function create(): void
     {
-        $this->render("professor/dietas/create");
+        $this->render('professor/dietas/create');
     }
 
     public function store(): void
     {
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $alunoId = (int)($_POST["aluno_id"] ?? 0);
-            $professorId = (int)($_POST["professor_id"] ?? 0);
-            $nome = $_POST["nome"] ?? "";
-            $descricao = $_POST["descricao"] ?? "";
+        $userId = AuthMiddleware::getUserId();
+        if (!$userId) {
+            http_response_code(401);
+            return;
+        }
 
-            $dietaId = $this->dietaService->createDieta($alunoId, $professorId, $nome, $descricao);
-
-            if ($dietaId) {
-                $this->redirect("/professor/dietas");
-            } else {
-                $this->render("professor/dietas/create", ["errorMessage" => "Erro ao criar dieta."]);
-            }
+        try {
+            $this->dietaService->createDieta($_POST, $userId);
+            $this->redirect('/professor/dietas');
+        } catch (\InvalidArgumentException $exception) {
+            $this->render('professor/dietas/create', ['errorMessage' => $exception->getMessage()]);
         }
     }
 
     public function edit(int $id): void
     {
         $dieta = $this->dietaService->getDietaById($id);
-        if (!$dieta) {
+        if (!$dieta || (int) $dieta['responsavel_usuario_id'] !== (int) AuthMiddleware::getUserId()) {
             $this->handleNotFound();
         }
-        $this->render("professor/dietas/edit", ["dieta" => $dieta]);
+        $this->render('professor/dietas/edit', ['dieta' => $dieta]);
     }
 
     public function update(int $id): void
     {
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $nome = $_POST["nome"] ?? "";
-            $descricao = $_POST["descricao"] ?? "";
+        $userId = AuthMiddleware::getUserId();
+        $dieta = $this->dietaService->getDietaById($id);
+        if (!$userId || !$dieta || (int) $dieta['responsavel_usuario_id'] !== $userId) {
+            http_response_code(403);
+            return;
+        }
 
-            $updated = $this->dietaService->updateDieta($id, $nome, $descricao);
-
-            if ($updated) {
-                $this->redirect("/professor/dietas");
-            } else {
-                $dieta = $this->dietaService->getDietaById($id);
-                $this->render("professor/dietas/edit", ["dieta" => $dieta, "errorMessage" => "Erro ao atualizar dieta."]);
-            }
+        try {
+            $this->dietaService->updateDieta($id, $_POST, $userId);
+            $this->redirect('/professor/dietas');
+        } catch (\InvalidArgumentException $exception) {
+            $this->render('professor/dietas/edit', ['dieta' => $dieta, 'errorMessage' => $exception->getMessage()]);
         }
     }
 
     public function delete(int $id): void
     {
-        $deleted = $this->dietaService->deleteDieta($id);
-        if ($deleted) {
-            $this->redirect("/professor/dietas");
-        } else {
-            $this->redirect("/professor/dietas");
+        $dieta = $this->dietaService->getDietaById($id);
+        if (!$dieta || (int) $dieta['responsavel_usuario_id'] !== (int) AuthMiddleware::getUserId()) {
+            http_response_code(403);
+            return;
         }
+        $this->dietaService->deleteDieta($id);
+        $this->redirect('/professor/dietas');
     }
 
     protected function handleNotFound(): void
     {
         http_response_code(404);
-        echo '<h1>404 - Dieta Não Encontrada</h1>';
+        echo '<h1>404 - Plano Alimentar Não Encontrado</h1>';
         exit();
     }
 }
