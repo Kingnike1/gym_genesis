@@ -38,14 +38,48 @@ class StudentTreinoController extends Controller
         $this->render('student/treinos/show', ['treino' => $treino]);
     }
 
+    public function startExecution(int $id): void
+    {
+        $aluno = $this->currentStudent();
+        $executionId = $this->treinoService->startExecution($id, (int) $aluno['idaluno'], $this->nullable($_POST['observacoes'] ?? null));
+        if ($executionId <= 0) {
+            http_response_code(403);
+            echo '<h1>403 - Treino indisponível</h1>';
+            return;
+        }
+
+        $this->redirect('/student/treinos/' . $id);
+    }
+
+    public function finishExecution(int $id): void
+    {
+        $aluno = $this->currentStudent();
+        $updated = $this->treinoService->finishExecution($id, (int) $aluno['idaluno'], $this->nullable($_POST['observacoes'] ?? null));
+        if (!$updated) {
+            http_response_code(404);
+            echo '<h1>404 - Execução não encontrada</h1>';
+            return;
+        }
+
+        $this->redirect('/student/treinos');
+    }
+
     private function currentStudent(): array
     {
         $userId = AuthMiddleware::getUserId();
         $aluno = $userId ? $this->alunoService->getAlunoByUsuarioId($userId) : null;
-        if (!$aluno) {
-            $this->handleNotFound();
+        if (!$aluno || $aluno['status'] !== 'ativo') {
+            http_response_code(403);
+            echo '<h1>403 - Perfil de aluno ativo obrigatório</h1>';
+            exit();
         }
         return $aluno;
+    }
+
+    private function nullable(mixed $value): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+        return $value === '' ? null : $value;
     }
 
     protected function handleNotFound(): void
