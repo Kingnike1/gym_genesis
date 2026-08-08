@@ -3,36 +3,49 @@
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
-use App\Middleware\RouteAuthorizationMiddleware;
+use App\Repositories\AlunoRepository;
 use App\Repositories\TreinoRepository;
+use App\Services\AlunoService;
 use App\Services\TreinoService;
 
 class StudentTreinoController extends Controller
 {
     private TreinoService $treinoService;
+    private AlunoService $alunoService;
 
     public function __construct()
     {
         AuthMiddleware::requireUserType(3);
         $this->treinoService = new TreinoService(new TreinoRepository());
+        $this->alunoService = new AlunoService(new AlunoRepository());
     }
 
     public function index(): void
     {
-        $userId = AuthMiddleware::getUserId();
-        $treinos = $this->treinoService->getTreinosByAlunoId($userId);
+        $aluno = $this->currentStudent();
+        $treinos = $this->treinoService->getTreinosByAlunoId((int) $aluno['idaluno']);
         $this->render('student/treinos/index', ['treinos' => $treinos]);
     }
 
     public function show(int $id): void
     {
+        $aluno = $this->currentStudent();
         $treino = $this->treinoService->getTreinoById($id);
-        if (!$treino) {
+        if (!$treino || (int) $treino['aluno_id'] !== (int) $aluno['idaluno']) {
             $this->handleNotFound();
         }
 
-        RouteAuthorizationMiddleware::requireOwner((int) $treino['aluno_id']);
         $this->render('student/treinos/show', ['treino' => $treino]);
+    }
+
+    private function currentStudent(): array
+    {
+        $userId = AuthMiddleware::getUserId();
+        $aluno = $userId ? $this->alunoService->getAlunoByUsuarioId($userId) : null;
+        if (!$aluno) {
+            $this->handleNotFound();
+        }
+        return $aluno;
     }
 
     protected function handleNotFound(): void
