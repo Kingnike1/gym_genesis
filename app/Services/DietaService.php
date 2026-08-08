@@ -6,29 +6,45 @@ use App\Repositories\DietaRepository;
 
 class DietaService
 {
-    private DietaRepository $dietaRepository;
-
-    public function __construct(DietaRepository $dietaRepository)
+    public function __construct(private readonly DietaRepository $dietaRepository)
     {
-        $this->dietaRepository = $dietaRepository;
     }
 
-    public function createDieta(int $alunoId, int $professorId, string $nome, string $descricao, string $dataCriacao = null): ?int
+    public function createDieta(array $data, int $responsavelUsuarioId): int
     {
-        if ($dataCriacao === null) {
-            $dataCriacao = date("Y-m-d H:i:s");
-        }
-        return $this->dietaRepository->create($alunoId, $professorId, $nome, $descricao, $dataCriacao);
+        $this->validate($data);
+        return $this->dietaRepository->createPlan(
+            (int) $data['aluno_id'],
+            $responsavelUsuarioId,
+            trim((string) $data['nome']),
+            trim((string) ($data['objetivo'] ?? '')),
+            trim((string) $data['qualificacao_responsavel']),
+            $this->nullableString($data['registro_profissional'] ?? null),
+            (string) $data['data_inicio'],
+            $this->nullableString($data['data_fim'] ?? null),
+            $this->nullableString($data['observacoes'] ?? null),
+            is_array($data['refeicoes'] ?? null) ? $data['refeicoes'] : []
+        );
     }
 
-    public function updateDieta(int $id, string $nome, string $descricao): bool
+    public function updateDieta(int $id, array $data, int $responsavelUsuarioId): bool
     {
-        return $this->dietaRepository->update($id, $nome, $descricao);
+        $this->validate($data, false);
+        return $this->dietaRepository->updatePlan($id, $responsavelUsuarioId, [
+            'nome' => trim((string) $data['nome']),
+            'objetivo' => trim((string) ($data['objetivo'] ?? '')),
+            'observacoes' => $this->nullableString($data['observacoes'] ?? null),
+            'qualificacao_responsavel' => trim((string) $data['qualificacao_responsavel']),
+            'registro_profissional' => $this->nullableString($data['registro_profissional'] ?? null),
+            'data_inicio' => (string) $data['data_inicio'],
+            'data_fim' => $this->nullableString($data['data_fim'] ?? null),
+            'status' => in_array(($data['status'] ?? 'rascunho'), ['rascunho', 'ativo', 'encerrado'], true) ? $data['status'] : 'rascunho',
+        ], is_array($data['refeicoes'] ?? null) ? $data['refeicoes'] : []);
     }
 
     public function getDietaById(int $id): ?array
     {
-        return $this->dietaRepository->find($id);
+        return $this->dietaRepository->findDetailed($id);
     }
 
     public function getDietasByAlunoId(int $alunoId): array
@@ -36,9 +52,14 @@ class DietaService
         return $this->dietaRepository->findByAlunoId($alunoId);
     }
 
-    public function getDietasByProfessorId(int $professorId): array
+    public function getDietasByResponsibleUserId(int $userId): array
     {
-        return $this->dietaRepository->findByProfessorId($professorId);
+        return $this->dietaRepository->findByResponsibleUserId($userId);
+    }
+
+    public function getHistorico(int $id): array
+    {
+        return $this->dietaRepository->history($id);
     }
 
     public function deleteDieta(int $id): bool
@@ -46,8 +67,29 @@ class DietaService
         return $this->dietaRepository->delete($id);
     }
 
-    public function getAllDietas(): array
+    private function validate(array $data, bool $requireStudent = true): void
     {
-        return $this->dietaRepository->all();
+        if ($requireStudent && (int) ($data['aluno_id'] ?? 0) <= 0) {
+            throw new \InvalidArgumentException('Aluno é obrigatório.');
+        }
+        if (trim((string) ($data['nome'] ?? '')) === '') {
+            throw new \InvalidArgumentException('Nome do plano alimentar é obrigatório.');
+        }
+        if (trim((string) ($data['qualificacao_responsavel'] ?? '')) === '') {
+            throw new \InvalidArgumentException('Qualificação do responsável é obrigatória.');
+        }
+        if (trim((string) ($data['data_inicio'] ?? '')) === '') {
+            throw new \InvalidArgumentException('Data de início é obrigatória.');
+        }
+        $end = $this->nullableString($data['data_fim'] ?? null);
+        if ($end !== null && $end < (string) $data['data_inicio']) {
+            throw new \InvalidArgumentException('Data final não pode ser anterior à data inicial.');
+        }
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+        return $value === '' ? null : $value;
     }
 }
