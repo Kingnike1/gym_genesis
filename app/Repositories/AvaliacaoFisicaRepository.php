@@ -2,48 +2,48 @@
 
 namespace App\Repositories;
 
+use App\Services\Database;
+
 class AvaliacaoFisicaRepository extends BaseRepository
 {
     public function __construct()
     {
-        parent::__construct('avaliacao_fisica', 'idavaliacao', true);
+        parent::__construct('avaliacao_fisica_registro', 'idavaliacao', true);
     }
 
-    public function create(float $peso, float $altura, float $imc, ?float $percentualGordura, string $dataAvaliacao, int $usuarioId): ?int
+    public function create(int $alunoId, ?int $responsavelUsuarioId, float $peso, float $alturaCm, ?float $percentualGordura, ?string $pressaoArterial, ?string $observacoes, array $medidas = []): int
     {
-        $sql = 'INSERT INTO avaliacao_fisica (peso, altura, imc, percentual_gordura, data_avaliacao, usuario_id, academia_id) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$peso, $altura, $imc, $percentualGordura, $dataAvaliacao, $usuarioId, $this->academyId()]);
-        return (int) $this->db->lastInsertId();
+        return Database::transaction(function () use ($alunoId, $responsavelUsuarioId, $peso, $alturaCm, $percentualGordura, $pressaoArterial, $observacoes, $medidas): int {
+            $alturaM = $alturaCm / 100;
+            $imc = round($peso / ($alturaM * $alturaM), 2);
+            $stmt = $this->db->prepare('INSERT INTO avaliacao_fisica_registro (academia_id, aluno_id, responsavel_usuario_id, data_avaliacao, peso, altura, imc, percentual_gordura, pressao_arterial, observacoes) VALUES (?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$this->academyId(), $alunoId, $responsavelUsuarioId, $peso, $alturaCm, $imc, $percentualGordura, $pressaoArterial, $observacoes]);
+            $id = (int) $this->db->lastInsertId();
+            $insert = $this->db->prepare('INSERT INTO avaliacao_fisica_medida (avaliacao_id, nome, valor, unidade) VALUES (?, ?, ?, ?)');
+            foreach ($medidas as $medida) {
+                $insert->execute([$id, trim((string) $medida['nome']), (float) $medida['valor'], trim((string) ($medida['unidade'] ?? 'cm'))]);
+            }
+            return $id;
+        });
     }
 
-    public function update(int $id, float $peso, float $altura, float $imc, ?float $percentualGordura, string $dataAvaliacao): bool
+    public function findByAlunoId(int $alunoId): array
     {
-        $sql = 'UPDATE avaliacao_fisica SET peso=?, altura=?, imc=?, percentual_gordura=?, data_avaliacao=? WHERE idavaliacao=? AND academia_id=?';
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$peso, $altura, $imc, $percentualGordura, $dataAvaliacao, $id, $this->academyId()]);
-    }
-
-    public function findByUsuarioId(int $usuarioId): array
-    {
-        $stmt = $this->db->prepare('SELECT * FROM avaliacao_fisica WHERE usuario_id = ? AND academia_id = ? ORDER BY data_avaliacao DESC');
-        $stmt->execute([$usuarioId, $this->academyId()]);
+        $stmt = $this->db->prepare('SELECT * FROM avaliacao_fisica_registro WHERE aluno_id = ? AND academia_id = ? ORDER BY data_avaliacao DESC, idavaliacao DESC');
+        $stmt->execute([$alunoId, $this->academyId()]);
         return $stmt->fetchAll();
     }
 
-    public function findLatestByUsuarioId(int $usuarioId): ?array
+    public function findLatestByAlunoId(int $alunoId): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM avaliacao_fisica WHERE usuario_id = ? AND academia_id = ? ORDER BY data_avaliacao DESC LIMIT 1');
-        $stmt->execute([$usuarioId, $this->academyId()]);
-        $result = $stmt->fetch();
-        return $result ?: null;
+        $rows = $this->findByAlunoId($alunoId);
+        return $rows[0] ?? null;
     }
 
-    public function findByUsuarioIdAndDate(int $usuarioId, string $dataAvaliacao): ?array
+    public function measurements(int $avaliacaoId): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM avaliacao_fisica WHERE usuario_id = ? AND data_avaliacao = ? AND academia_id = ? LIMIT 1');
-        $stmt->execute([$usuarioId, $dataAvaliacao, $this->academyId()]);
-        $result = $stmt->fetch();
-        return $result ?: null;
+        $stmt = $this->db->prepare('SELECT m.* FROM avaliacao_fisica_medida m INNER JOIN avaliacao_fisica_registro a ON a.idavaliacao=m.avaliacao_id WHERE m.avaliacao_id=? AND a.academia_id=? ORDER BY m.nome');
+        $stmt->execute([$avaliacaoId, $this->academyId()]);
+        return $stmt->fetchAll();
     }
 }

@@ -6,32 +6,19 @@ use App\Repositories\AvaliacaoFisicaRepository;
 
 class AvaliacaoFisicaService
 {
-    private AvaliacaoFisicaRepository $avaliacaoRepository;
-
-    public function __construct(AvaliacaoFisicaRepository $avaliacaoRepository)
+    public function __construct(private AvaliacaoFisicaRepository $avaliacaoRepository)
     {
-        $this->avaliacaoRepository = $avaliacaoRepository;
     }
 
-    public function createAvaliacao(float $peso, float $altura, ?float $percentualGordura, int $usuarioId): ?int
+    public function createAvaliacao(int $alunoId, ?int $responsavelUsuarioId, float $peso, float $alturaCm, ?float $percentualGordura = null, ?string $pressaoArterial = null, ?string $observacoes = null, array $medidas = []): int
     {
-        // Calcular IMC: peso (kg) / (altura (m))^2
-        $alturaMetros = $altura / 100;
-        $imc = $peso / ($alturaMetros * $alturaMetros);
-        $imc = round($imc, 2);
-
-        $dataAvaliacao = date('Y-m-d');
-        return $this->avaliacaoRepository->create($peso, $altura, $imc, $percentualGordura, $dataAvaliacao, $usuarioId);
-    }
-
-    public function updateAvaliacao(int $id, float $peso, float $altura, ?float $percentualGordura, string $dataAvaliacao): bool
-    {
-        // Calcular IMC
-        $alturaMetros = $altura / 100;
-        $imc = $peso / ($alturaMetros * $alturaMetros);
-        $imc = round($imc, 2);
-
-        return $this->avaliacaoRepository->update($id, $peso, $altura, $imc, $percentualGordura, $dataAvaliacao);
+        if ($peso <= 0 || $alturaCm <= 0) {
+            throw new \InvalidArgumentException('Peso e altura devem ser maiores que zero.');
+        }
+        if ($percentualGordura !== null && ($percentualGordura < 0 || $percentualGordura > 100)) {
+            throw new \InvalidArgumentException('Percentual de gordura inválido.');
+        }
+        return $this->avaliacaoRepository->create($alunoId, $responsavelUsuarioId, $peso, $alturaCm, $percentualGordura, $pressaoArterial, $observacoes, $medidas);
     }
 
     public function getAvaliacaoById(int $id): ?array
@@ -39,66 +26,42 @@ class AvaliacaoFisicaService
         return $this->avaliacaoRepository->find($id);
     }
 
-    public function getAvaliacoesByUsuarioId(int $usuarioId): array
+    public function getAvaliacoesByAlunoId(int $alunoId): array
     {
-        return $this->avaliacaoRepository->findByUsuarioId($usuarioId);
+        return $this->avaliacaoRepository->findByAlunoId($alunoId);
     }
 
-    public function getLatestAvaliacaoByUsuarioId(int $usuarioId): ?array
+    public function getLatestAvaliacaoByAlunoId(int $alunoId): ?array
     {
-        return $this->avaliacaoRepository->findLatestByUsuarioId($usuarioId);
+        return $this->avaliacaoRepository->findLatestByAlunoId($alunoId);
     }
 
-    public function deleteAvaliacao(int $id): bool
+    public function measurements(int $avaliacaoId): array
     {
-        return $this->avaliacaoRepository->delete($id);
+        return $this->avaliacaoRepository->measurements($avaliacaoId);
     }
 
-    public function getAllAvaliacoes(): array
+    public function calculateProgress(int $alunoId): array
     {
-        return $this->avaliacaoRepository->all();
-    }
-
-    public function calculateProgress(int $usuarioId): array
-    {
-        $avaliacoes = $this->getAvaliacoesByUsuarioId($usuarioId);
-
+        $avaliacoes = array_reverse($this->getAvaliacoesByAlunoId($alunoId));
         if (count($avaliacoes) < 2) {
-            return [
-                'pesoInicial' => null,
-                'pesoAtual' => null,
-                'variacao' => 0,
-                'percentualVariacao' => 0,
-                'imcInicial' => null,
-                'imcAtual' => null,
-                'gorduraInicial' => null,
-                'gorduraAtual' => null,
-            ];
+            return ['totalAvaliacoes' => count($avaliacoes), 'pesoInicial' => null, 'pesoAtual' => null, 'variacao' => 0.0, 'percentualVariacao' => 0.0];
         }
-
-        // Ordenar por data (mais antiga primeiro)
-        usort($avaliacoes, function ($a, $b) {
-            return strtotime($a['data_avaliacao']) - strtotime($b['data_avaliacao']);
-        });
-
-        $primeiraAvaliacao = $avaliacoes[0];
-        $ultimaAvaliacao = $avaliacoes[count($avaliacoes) - 1];
-
-        $pesoInicial = (float)$primeiraAvaliacao['peso'];
-        $pesoAtual = (float)$ultimaAvaliacao['peso'];
+        $primeira = $avaliacoes[0];
+        $ultima = $avaliacoes[array_key_last($avaliacoes)];
+        $pesoInicial = (float) $primeira['peso'];
+        $pesoAtual = (float) $ultima['peso'];
         $variacao = $pesoAtual - $pesoInicial;
-        $percentualVariacao = ($variacao / $pesoInicial) * 100;
-
         return [
+            'totalAvaliacoes' => count($avaliacoes),
             'pesoInicial' => $pesoInicial,
             'pesoAtual' => $pesoAtual,
             'variacao' => round($variacao, 2),
-            'percentualVariacao' => round($percentualVariacao, 2),
-            'imcInicial' => (float)$primeiraAvaliacao['imc'],
-            'imcAtual' => (float)$ultimaAvaliacao['imc'],
-            'gorduraInicial' => $primeiraAvaliacao['percentual_gordura'] ? (float)$primeiraAvaliacao['percentual_gordura'] : null,
-            'gorduraAtual' => $ultimaAvaliacao['percentual_gordura'] ? (float)$ultimaAvaliacao['percentual_gordura'] : null,
-            'totalAvaliacoes' => count($avaliacoes),
+            'percentualVariacao' => $pesoInicial > 0 ? round(($variacao / $pesoInicial) * 100, 2) : 0.0,
+            'imcInicial' => (float) $primeira['imc'],
+            'imcAtual' => (float) $ultima['imc'],
+            'gorduraInicial' => $primeira['percentual_gordura'] !== null ? (float) $primeira['percentual_gordura'] : null,
+            'gorduraAtual' => $ultima['percentual_gordura'] !== null ? (float) $ultima['percentual_gordura'] : null,
         ];
     }
 }
