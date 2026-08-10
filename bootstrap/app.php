@@ -1,6 +1,8 @@
 <?php
 
 use App\Container\Container;
+use App\Storage\LocalStorage;
+use App\Storage\StorageInterface;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -19,5 +21,6 @@ date_default_timezone_set((string) ($_ENV['APP_TIMEZONE'] ?? 'America/Sao_Paulo'
 
 $container = new Container();
 $container->instance(Container::class, $container);
+$container->singleton(StorageInterface::class, static fn () => new LocalStorage());
 
 return $container;
