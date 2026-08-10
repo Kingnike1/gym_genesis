@@ -10,12 +10,12 @@ final class PasswordResetMailer
     {
         $mailer = new PHPMailer(true);
         $mailer->isSMTP();
-        $mailer->Host = (string) ($_ENV['SMTP_HOST'] ?? '');
-        $mailer->Port = (int) ($_ENV['SMTP_PORT'] ?? 587);
+        $mailer->Host = (string) ($_ENV['MAIL_HOST'] ?? '');
+        $mailer->Port = (int) ($_ENV['MAIL_PORT'] ?? 587);
         $mailer->SMTPAuth = true;
-        $mailer->Username = (string) ($_ENV['SMTP_USER'] ?? '');
-        $mailer->Password = (string) ($_ENV['SMTP_PASSWORD'] ?? '');
-        $mailer->SMTPSecure = (string) ($_ENV['SMTP_ENCRYPTION'] ?? PHPMailer::ENCRYPTION_STARTTLS);
+        $mailer->Username = (string) ($_ENV['MAIL_USERNAME'] ?? '');
+        $mailer->Password = (string) ($_ENV['MAIL_PASSWORD'] ?? '');
+        $mailer->SMTPSecure = (string) ($_ENV['MAIL_ENCRYPTION'] ?? PHPMailer::ENCRYPTION_STARTTLS);
         $from = (string) ($_ENV['MAIL_FROM_ADDRESS'] ?? 'no-reply@example.invalid');
         $fromName = (string) ($_ENV['MAIL_FROM_NAME'] ?? 'Gym Genesis');
         $mailer->setFrom($from, $fromName);
