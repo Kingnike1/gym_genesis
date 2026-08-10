@@ -21,6 +21,10 @@ Router::get('/home', static function (): void {
 
 Router::get('/login', 'AuthController@login');
 Router::post('/login', 'AuthController@login');
+Router::get('/password/forgot', 'PasswordResetController@request');
+Router::post('/password/forgot', 'PasswordResetController@request');
+Router::get('/password/reset', 'PasswordResetController@reset');
+Router::post('/password/reset', 'PasswordResetController@reset');
 Router::post('/logout', 'AuthController@logout', [static fn () => AuthMiddleware::requireAuth()]);
 Router::post('/academy/select', 'AcademyContextController@select', [static fn () => AuthMiddleware::requireAuth()]);
 
