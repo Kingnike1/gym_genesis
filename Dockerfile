@@ -1,8 +1,12 @@
 FROM composer:2.8 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock* ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader || \
-    composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --no-interaction \
+    --no-progress \
+    --optimize-autoloader
 
 FROM php:8.2-apache
 
