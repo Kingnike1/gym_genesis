@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+vendor
+.phpunit.cache
+.phpstan-cache
+storage/uploads/*
+!storage/uploads/.gitkeep
+public/uploads/*
+logs
+*.log
+*.bak
+*.beforefix
+.vscode
