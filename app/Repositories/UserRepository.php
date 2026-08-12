@@ -62,6 +62,15 @@ class UserRepository extends BaseRepository
         });
     }
 
+    public function updateEmail(int $id, string $email): bool
+    {
+        if ($this->findById($id) === null) {
+            return false;
+        }
+        $stmt = $this->db->prepare('UPDATE usuario SET email = ? WHERE idusuario = ?');
+        return $stmt->execute([$email, $id]);
+    }
+
     public function updatePasswordHash(int $id, string $passwordHash): bool
     {
         $stmt = $this->db->prepare('UPDATE usuario SET senha = ? WHERE idusuario = ?');
