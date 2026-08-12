@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="Gym Genesis">
+  <description>PSR-12 para o código moderno do Gym Genesis.</description>
+  <file>app</file>
+  <file>routes</file>
+  <file>scripts</file>
+  <file>tests</file>
+  <exclude-pattern>tests/legacy/*</exclude-pattern>
+  <rule ref="PSR12"/>
+</ruleset>
