@@ -1,8 +1,8 @@
 CREATE TABLE avaliacao_fisica_registro (
     idavaliacao BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
-    aluno_id BIGINT UNSIGNED NOT NULL,
-    responsavel_usuario_id BIGINT UNSIGNED NULL,
+    aluno_id INT NOT NULL,
+    responsavel_usuario_id INT NULL,
     data_avaliacao DATE NOT NULL,
     peso DECIMAL(6,2) NOT NULL,
     altura DECIMAL(5,2) NOT NULL,
