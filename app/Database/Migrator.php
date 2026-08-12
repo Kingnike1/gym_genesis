@@ -147,6 +147,22 @@ final class Migrator
         $sql = preg_replace('/\s+VISIBLE\b/i', '', $sql) ?? $sql;
         $sql = str_replace('DEFAULT CHARACTER SET = utf8', 'DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci', $sql);
 
+        // Legacy Workbench schema used defaults that older MySQL-compatible
+        // servers reject on TEXT/LONGTEXT columns. Keep the profile image
+        // default by using VARCHAR (it stores a filename/path, not image bytes)
+        // and make optional long-form profile fields nullable instead of
+        // assigning an empty-string default to TEXT.
+        $sql = preg_replace(
+            "/`foto_perfil`\s+LONGTEXT\s+NOT NULL\s+DEFAULT\s+'padrao\.png'/i",
+            "`foto_perfil` VARCHAR(255) NOT NULL DEFAULT 'padrao.png'",
+            $sql
+        ) ?? $sql;
+        $sql = preg_replace(
+            "/(`(?:descricao|horarios_disponiveis)`)\s+TEXT\s+NOT NULL\s+DEFAULT\s+''/i",
+            '$1 TEXT NULL',
+            $sql
+        ) ?? $sql;
+
         return $sql;
     }
 
