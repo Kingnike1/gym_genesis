@@ -10,6 +10,7 @@ $container = require __DIR__ . '/../bootstrap/app.php';
 
 Router::setContainer($container);
 require_once __DIR__ . '/../routes/web.php';
+require_once __DIR__ . '/../routes/api.php';
 Router::dispatch();
 
 $durationMs = (hrtime(true) - $startedAt) / 1_000_000;
