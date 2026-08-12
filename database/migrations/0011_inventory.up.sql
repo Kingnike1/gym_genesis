@@ -1,7 +1,9 @@
 ALTER TABLE produto
+    CHANGE COLUMN quantidade_estoque estoque INT NOT NULL,
     ADD COLUMN sku VARCHAR(80) NULL AFTER nome,
     ADD COLUMN custo DECIMAL(10,2) NULL AFTER preco,
     ADD COLUMN estoque_minimo INT UNSIGNED NOT NULL DEFAULT 0 AFTER estoque,
+    ADD COLUMN categoria VARCHAR(100) NULL AFTER imagem,
     ADD COLUMN status ENUM('ativo','inativo') NOT NULL DEFAULT 'ativo' AFTER categoria;
 
 CREATE UNIQUE INDEX uk_produto_sku_academia ON produto (academia_id, sku);
