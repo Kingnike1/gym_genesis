@@ -19,7 +19,7 @@ CREATE TABLE matricula (
     idmatricula BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
     unidade_id BIGINT UNSIGNED NULL,
-    aluno_id BIGINT UNSIGNED NOT NULL,
+    aluno_id INT NOT NULL,
     plano_id BIGINT UNSIGNED NOT NULL,
     valor_contratado DECIMAL(10,2) NOT NULL,
     data_inicio DATE NOT NULL,
@@ -42,8 +42,8 @@ CREATE TABLE matricula_historico (
     status_anterior VARCHAR(30) NULL,
     status_novo VARCHAR(30) NOT NULL,
     motivo VARCHAR(255) NULL,
-    usuario_id BIGINT UNSIGNED NULL,
+    usuario_id INT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_historico_matricula FOREIGN KEY (matricula_id) REFERENCES matricula(idmatricula) ON DELETE CASCADE,
-    CONSTRAINT fk_historico_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(idusuario)
+    CONSTRAINT fk_matricula_historico_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(idusuario)
 );
