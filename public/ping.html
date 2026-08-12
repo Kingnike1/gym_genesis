@@ -3,20 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gym Genesis — Teste de conexão</title>
+  <title>Gym Genesis — Teste de Conectividade</title>
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;min-height:100vh;display:grid;place-items:center;color:#111}
-    main{background:#fff;padding:32px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.08);max-width:520px;text-align:center}
-    a{display:inline-block;margin-top:16px;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px}
-    small{display:block;margin-top:18px;color:#666}
+    body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;min-height:100vh;display:grid;place-items:center;color:#18202a}
+    main{width:min(560px,calc(100% - 40px));background:#fff;padding:32px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .ok{display:inline-block;padding:6px 10px;border-radius:999px;background:#e8f7ed;font-weight:700}
+    a{display:block;margin-top:14px;padding:12px 16px;border:1px solid #ccd3da;border-radius:10px;color:#18202a;text-decoration:none}
+    a:hover{background:#f7f8fa} small{display:block;margin-top:24px;color:#66717d}
   </style>
 </head>
 <body>
   <main>
-    <h1>Gym Genesis está respondendo ✅</h1>
-    <p>Esta página é estática e não acessa PHP, rotas da aplicação ou banco de dados.</p>
-    <a href="/">Tentar abrir o sistema</a>
-    <small>Teste de conectividade do staging</small>
+    <span class="ok">Servidor respondeu</span>
+    <h1>Gym Genesis está acessível</h1>
+    <p>Esta página é estática: não carrega PHP, rotas da aplicação nem banco. Ela serve para descobrir em qual camada o staging está travando.</p>
+    <a href="/health">1. Testar /health</a>
+    <a href="/ready">2. Testar /ready (inclui banco)</a>
+    <a href="/login">3. Abrir /login</a>
+    <a href="/">4. Abrir o sistema</a>
+    <small>Staging — diagnóstico temporário de conectividade.</small>
   </main>
 </body>
 </html>
