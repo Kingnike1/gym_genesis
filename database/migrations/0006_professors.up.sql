@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS professor (
   idprofessor INT NOT NULL AUTO_INCREMENT,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   usuario_id INT NOT NULL,
   nome VARCHAR(120) NOT NULL,
   cref VARCHAR(30) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS professor (
 
 CREATE TABLE IF NOT EXISTS professor_unidade (
   professor_id INT NOT NULL,
-  unidade_id INT NOT NULL,
+  unidade_id BIGINT UNSIGNED NOT NULL,
   PRIMARY KEY (professor_id, unidade_id),
   CONSTRAINT fk_professor_unidade_professor FOREIGN KEY (professor_id) REFERENCES professor(idprofessor) ON DELETE CASCADE,
   CONSTRAINT fk_professor_unidade_unidade FOREIGN KEY (unidade_id) REFERENCES unidades(idunidade) ON DELETE CASCADE
