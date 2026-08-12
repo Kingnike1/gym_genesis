@@ -1,0 +1,47 @@
+services:
+  app:
+    image: ${APP_IMAGE:-gym-genesis:latest}
+    env_file:
+      - .env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_HOST: db
+      DB_PORT: 3306
+      LOG_STREAM: php://stderr
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_uploads:/var/www/html/storage/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
+  app_uploads:
