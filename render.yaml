@@ -15,7 +15,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: PORT
-        value: "8080"
+        value: "10000"
       - key: APP_SECRET
         generateValue: true
       - key: DB_HOST
