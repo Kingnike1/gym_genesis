@@ -4,6 +4,7 @@ use App\Container\Container;
 use App\Http\ErrorHandler;
 use App\Storage\LocalStorage;
 use App\Storage\StorageInterface;
+use Psr\Log\LoggerInterface;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -21,8 +22,11 @@ ErrorHandler::register($appDebug);
 
 date_default_timezone_set((string) ($_ENV['APP_TIMEZONE'] ?? 'America/Sao_Paulo'));
 
+$logger = require __DIR__ . '/logging.php';
+
 $container = new Container();
 $container->instance(Container::class, $container);
+$container->instance(LoggerInterface::class, $logger);
 $container->singleton(StorageInterface::class, static fn () => new LocalStorage());
 
 return $container;
