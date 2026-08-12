@@ -2,22 +2,19 @@ services:
   app:
     build:
       context: .
-      target: vendor
-    image: composer:2.8
-    working_dir: /app
-    volumes:
-      - ./:/app
-      - composer_cache:/tmp/composer-cache
     env_file:
       - .env
     environment:
-      COMPOSER_CACHE_DIR: /tmp/composer-cache
-    command: sh -c "composer install && php -S 0.0.0.0:8080 -t public"
+      DB_HOST: db
+      DB_PORT: 3306
     ports:
       - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - app_uploads:/var/www/html/storage/uploads
+    restart: unless-stopped
 
   db:
     image: mariadb:11.4
@@ -39,4 +36,4 @@ services:
 
 volumes:
   db_data:
-  composer_cache:
+  app_uploads:
