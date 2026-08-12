@@ -12,9 +12,24 @@ $studentOnly = [static fn () => AuthMiddleware::requireUserType(3), $academyCont
 Router::get('/health', 'HealthController@live');
 Router::get('/ready', 'HealthController@ready');
 
+Router::get('/teste', static function (): void {
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">';
+    echo '<meta name="viewport" content="width=device-width,initial-scale=1">';
+    echo '<title>Gym Genesis - Teste</title></head>';
+    echo '<body style="font-family:Arial,sans-serif;max-width:720px;margin:60px auto;padding:20px">';
+    echo '<h1>Gym Genesis está online ✅</h1>';
+    echo '<p>Se você está vendo esta página, o PHP, Apache e o roteamento HTTP estão respondendo.</p>';
+    echo '<p><a href="/health">Testar /health</a></p>';
+    echo '<p><a href="/ready">Testar /ready (inclui banco)</a></p>';
+    echo '<p><a href="/login">Abrir login do sistema</a></p>';
+    echo '</body></html>';
+});
+
 Router::get('/', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
     echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
+    echo '<p><a href="/teste">Abrir página de diagnóstico</a></p>';
 });
 Router::get('/home', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
