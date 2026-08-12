@@ -1,63 +1,39 @@
-version: '3.8' 
-
 services:
-  php:
-    build: .
+  app:
+    build:
+      context: .
     env_file:
       - .env
-    container_name: "php"
-    image: gym_genesis_php
-    volumes:
-      - ./:/var/www/html/
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - MAIL_HOST=${MAIL_HOST}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
-      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - APP_SECRET=${APP_SECRET}
+      DB_HOST: db
+      DB_PORT: 3306
     ports:
-      - "83:80"
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_uploads:/var/www/html/storage/uploads
+    restart: unless-stopped
 
   db:
-    image: mariadb:10.5
-    container_name: "db"
-    restart: always
-    volumes: 
-      - ./db/banco.sql:/docker-entrypoint-initdb.d/banco.sql
-      - ./db/inserts.sql:/docker-entrypoint-initdb.d/inserts.sql
+    image: mariadb:11.4
+    restart: unless-stopped
     environment:
-      - MARIADB_USER=root
-      - MARIADB_ROOT_PASSWORD=123
+      MARIADB_DATABASE: ${DB_NAME:-gym_genesis_dev}
+      MARIADB_USER: ${DB_USER:-gym_app}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD deve ser definida}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD deve ser definida}
+    volumes:
+      - db_data:/var/lib/mysql
     ports:
       - "3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
-  composer:                       # Serviço chamado "composer"
-    image: composer:2.8.9         # Usa a imagem oficial do Composer, versão 2.8.9
-    container_name: composer      # Nome fixo para o container criado ("composer")
-    
-    volumes:                      # Define volumes (diretórios compartilhados)
-      - .:/gym_genesis            # Monta a pasta atual (projeto local) em /gym_genesis dentro do container
-      - composer_cache:/root/.composer/cache  # Monta um volume Docker nomeado para cache do Composer, melhorando performance
-    
-    working_dir: /gym_genesis     # Define o diretório padrão para rodar comandos dentro do container
-    
-    environment:                  # Define variáveis de ambiente dentro do container
-      COMPOSER_ALLOW_SUPERUSER: "1"  # Permite rodar Composer como root sem warnings
-    
-    stdin_open: true              # Mantém o stdin aberto para permitir interação com o container
-    tty: true                    # Aloca um terminal TTY para comandos interativos
-    
-    command: sh -c "git config --global --add safe.directory /gym_genesis && tail -f /dev/null"
-                                  # Ao iniciar o container, executa:
-                                  # 1) Configura o Git para reconhecer /gym_genesis como diretório seguro (evita erros ao usar volumes montados)
-                                  # 2) Mantém o container rodando com 'tail -f /dev/null' (não fecha o container automaticamente)
-
-volumes:                          # Declaração dos volumes nomeados do Docker
-  composer_cache:                 # Volume nomeado para armazenar cache do Composer entre execuções
+volumes:
+  db_data:
+  app_uploads:
