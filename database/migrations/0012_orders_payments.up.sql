@@ -1,7 +1,7 @@
 CREATE TABLE pedido_comercial (
     idpedido BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
-    usuario_id BIGINT UNSIGNED NOT NULL,
+    usuario_id INT NOT NULL,
     idempotency_key VARCHAR(100) NOT NULL,
     status ENUM('pendente','aguardando_pagamento','pago','cancelado','reembolsado') NOT NULL DEFAULT 'pendente',
     subtotal DECIMAL(10,2) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE pedido_comercial (
 CREATE TABLE pedido_item_registro (
     iditem BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     pedido_id BIGINT UNSIGNED NOT NULL,
-    produto_id BIGINT UNSIGNED NOT NULL,
+    produto_id INT NOT NULL,
     nome_produto VARCHAR(255) NOT NULL,
     preco_unitario DECIMAL(10,2) NOT NULL,
     quantidade INT UNSIGNED NOT NULL,
