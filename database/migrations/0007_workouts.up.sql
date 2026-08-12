@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS ficha_treino (
   idtreino INT NOT NULL AUTO_INCREMENT,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   aluno_id INT NOT NULL,
   professor_id INT NOT NULL,
   nome VARCHAR(120) NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS ficha_treino_exercicio (
 
 CREATE TABLE IF NOT EXISTS execucao_treino (
   idexecucao INT NOT NULL AUTO_INCREMENT,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   treino_id INT NOT NULL,
   aluno_id INT NOT NULL,
   iniciado_em DATETIME NOT NULL,
