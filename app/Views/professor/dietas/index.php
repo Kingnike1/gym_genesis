@@ -71,7 +71,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($dietas as $dieta): ?>
+                <?php foreach ($dietas as $dieta) : ?>
                     <tr>
                         <td><?= htmlspecialchars($dieta["iddieta"]) ?></td>
                         <td><?= htmlspecialchars($dieta["aluno_id"]) ?></td>

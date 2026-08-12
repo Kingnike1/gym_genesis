@@ -65,7 +65,7 @@
 <body>
     <div class="container">
         <h1>Criar Nova Dieta</h1>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/professor/dietas" method="POST">

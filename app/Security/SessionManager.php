@@ -29,13 +29,17 @@ final class SessionManager
 
     public static function logout(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) self::start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            self::start();
+        }
         self::destroyActiveSession();
     }
 
     public static function invalidateCurrent(): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) self::destroyActiveSession();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            self::destroyActiveSession();
+        }
     }
 
     private static function enforceIdleTimeout(): void

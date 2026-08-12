@@ -8,7 +8,7 @@
 </style>
 
 <div style="background: white; padding: 20px; border-radius: 8px; max-width: 600px;">
-    <?php if (isset($errorMessage)): ?>
+    <?php if (isset($errorMessage)) : ?>
         <p class="error"><?= htmlspecialchars($errorMessage) ?></p>
     <?php endif; ?>
     <form action="/gym_genesis/admin/plans/<?= htmlspecialchars($plano["idplano"]) ?>" method="POST">

@@ -80,9 +80,18 @@ class StudentProgressController extends Controller
         ]);
     }
 
-    public function edit(int $id): void { $this->immutable(); }
-    public function update(int $id): void { $this->immutable(); }
-    public function delete(int $id): void { $this->immutable(); }
+    public function edit(int $id): void
+    {
+        $this->immutable();
+    }
+    public function update(int $id): void
+    {
+        $this->immutable();
+    }
+    public function delete(int $id): void
+    {
+        $this->immutable();
+    }
 
     private function immutable(): void
     {

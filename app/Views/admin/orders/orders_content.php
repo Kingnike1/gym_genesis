@@ -23,8 +23,8 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (isset($pedidos) && count($pedidos) > 0): ?>
-                <?php foreach ($pedidos as $pedido): ?>
+            <?php if (isset($pedidos) && count($pedidos) > 0) : ?>
+                <?php foreach ($pedidos as $pedido) : ?>
                     <tr>
                         <td><?= htmlspecialchars($pedido["idpedido"]) ?></td>
                         <td><?= htmlspecialchars($pedido["usuario_id"]) ?></td>
@@ -40,7 +40,7 @@
                         </td>
                     </tr>
                 <?php endforeach; ?>
-            <?php else: ?>
+            <?php else : ?>
                 <tr>
                     <td colspan="6" style="text-align: center;">Nenhum pedido encontrado.</td>
                 </tr>

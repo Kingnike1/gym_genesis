@@ -1,7 +1,7 @@
 <h2>Editar Avaliação Física</h2>
 <p>Atualize suas medidas.</p>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage)) : ?>
     <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($errorMessage) ?>
     </div>

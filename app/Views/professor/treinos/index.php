@@ -71,7 +71,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($treinos as $treino): ?>
+                <?php foreach ($treinos as $treino) : ?>
                     <tr>
                         <td><?= htmlspecialchars($treino["idtreino"]) ?></td>
                         <td><?= htmlspecialchars($treino["aluno_id"]) ?></td>

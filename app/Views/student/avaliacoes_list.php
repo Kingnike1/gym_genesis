@@ -1,13 +1,13 @@
 <h2>Minhas Avaliações Físicas</h2>
 <p>Histórico de todas as suas avaliações físicas.</p>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage)) : ?>
     <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($errorMessage) ?>
     </div>
 <?php endif; ?>
 
-<?php if (isset($successMessage)): ?>
+<?php if (isset($successMessage)) : ?>
     <div style="background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($successMessage) ?>
     </div>
@@ -19,7 +19,7 @@
     </a>
 </div>
 
-<?php if (count($avaliacoes) > 0): ?>
+<?php if (count($avaliacoes) > 0) : ?>
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
             <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
@@ -32,7 +32,7 @@
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($avaliacoes as $avaliacao): ?>
+            <?php foreach ($avaliacoes as $avaliacao) : ?>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 12px;"><?= htmlspecialchars(date('d/m/Y', strtotime($avaliacao['data_avaliacao']))) ?></td>
                     <td style="padding: 12px;"><?= htmlspecialchars(number_format($avaliacao['peso'], 2, ',', '.')) ?></td>
@@ -50,7 +50,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-<?php else: ?>
+<?php else : ?>
     <div style="background-color: #fff9c4; padding: 20px; border-radius: 8px; margin-top: 20px;">
         <p>Você ainda não tem avaliações registradas. <a href="/student/avaliacoes/create">Crie sua primeira avaliação</a> para começar a acompanhar seu progresso!</p>
     </div>

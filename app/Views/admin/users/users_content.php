@@ -19,18 +19,25 @@
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($users as $user): ?>
+            <?php foreach ($users as $user) : ?>
                 <tr>
                     <td><?= htmlspecialchars($user["idusuario"]) ?></td>
                     <td><?= htmlspecialchars($user["email"]) ?></td>
                     <td>
-                        <?php 
-                            switch($user["tipo_usuario"]) {
-                                case 1: echo "Administrador"; break;
-                                case 2: echo "Professor"; break;
-                                case 3: echo "Aluno"; break;
-                                default: echo htmlspecialchars($user["tipo_usuario"]);
-                            }
+                        <?php
+                        switch ($user["tipo_usuario"]) {
+                            case 1:
+                                    echo "Administrador";
+                                break;
+                            case 2:
+                                    echo "Professor";
+                                break;
+                            case 3:
+                                    echo "Aluno";
+                                break;
+                            default:
+                                    echo htmlspecialchars($user["tipo_usuario"]);
+                        }
                         ?>
                     </td>
                     <td class="actions">

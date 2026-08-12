@@ -65,7 +65,7 @@
 <body>
     <div class="container">
         <h1>Editar Dieta</h1>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/professor/dietas/<?= htmlspecialchars($dieta["iddieta"]) ?>" method="POST">
