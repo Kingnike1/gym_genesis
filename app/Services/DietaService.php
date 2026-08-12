@@ -57,6 +57,11 @@ class DietaService
         return $this->dietaRepository->findByResponsibleUserId($userId);
     }
 
+    public function getAllDietas(): array
+    {
+        return $this->dietaRepository->all();
+    }
+
     public function getHistorico(int $id): array
     {
         return $this->dietaRepository->history($id);
