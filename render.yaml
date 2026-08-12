@@ -5,7 +5,7 @@ services:
     branch: stack-30-monitoramento-producao
     plan: free
     autoDeployTrigger: checksPass
-    healthCheckPath: /ready
+    healthCheckPath: /ping.html
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: /bin/sh scripts/start-render.sh
