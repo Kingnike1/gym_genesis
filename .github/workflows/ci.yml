@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: gym_genesis_test
+          MARIADB_USER: gym_test
+          MARIADB_PASSWORD: gym_test_password
+          MARIADB_ROOT_PASSWORD: root_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: gym_genesis_test
+      DB_USER: gym_test
+      DB_PASSWORD: gym_test_password
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring
+          coverage: none
+          tools: composer:v2
+      - name: Validate Composer
+        run: composer validate --strict
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Apply migrations
+        run: composer migrate
+      - name: Quality gate
+        run: composer check
+      - name: Security audit
+        run: composer audit --locked
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: gym-genesis:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
