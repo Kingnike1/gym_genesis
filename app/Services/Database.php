@@ -69,6 +69,6 @@ final class Database
     private static function env(string $key, string $default = ''): string
     {
         $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
-        return $value === false || $value === null || $value === '' ? $default : (string) $value;
+        return $value === false || $value === '' ? $default : (string) $value;
     }
 }
