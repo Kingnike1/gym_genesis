@@ -4,7 +4,7 @@ ALTER TABLE usuario
 
 CREATE TABLE password_reset_token (
     idtoken BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    usuario_id BIGINT UNSIGNED NOT NULL,
+    usuario_id INT NOT NULL,
     token_hash CHAR(64) NOT NULL,
     expires_at DATETIME NOT NULL,
     used_at DATETIME NULL,
