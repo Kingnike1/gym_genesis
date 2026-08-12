@@ -9,6 +9,11 @@ $adminOnly = [static fn () => AuthMiddleware::requireUserType(1), $academyContex
 $professorOnly = [static fn () => AuthMiddleware::requireUserType(2), $academyContext];
 $studentOnly = [static fn () => AuthMiddleware::requireUserType(3), $academyContext];
 
+Router::get('/health', static function (): void {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['status' => 'ok', 'service' => 'gym-genesis'], JSON_UNESCAPED_SLASHES);
+});
+
 Router::get('/', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
     echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
@@ -30,28 +35,24 @@ Router::post('/academy/select', 'AcademyContextController@select', [static fn ()
 
 Router::group('/admin', $adminOnly, static function (): void {
     Router::get('/dashboard', 'AdminDashboardController@index');
-
     Router::get('/users', 'UserController@index');
     Router::get('/users/create', 'UserController@create');
     Router::post('/users', 'UserController@store');
     Router::get('/users/{id:\d+}/edit', 'UserController@edit');
     Router::put('/users/{id:\d+}', 'UserController@update');
     Router::delete('/users/{id:\d+}', 'UserController@delete');
-
     Router::get('/plans', 'PlanController@index');
     Router::get('/plans/create', 'PlanController@create');
     Router::post('/plans', 'PlanController@store');
     Router::get('/plans/{id:\d+}/edit', 'PlanController@edit');
     Router::put('/plans/{id:\d+}', 'PlanController@update');
     Router::delete('/plans/{id:\d+}', 'PlanController@delete');
-
     Router::get('/products', 'ProductController@index');
     Router::get('/products/create', 'ProductController@create');
     Router::post('/products', 'ProductController@store');
     Router::get('/products/{id:\d+}/edit', 'ProductController@edit');
     Router::put('/products/{id:\d+}', 'ProductController@update');
     Router::delete('/products/{id:\d+}', 'ProductController@delete');
-
     Router::get('/orders', 'OrderController@index');
     Router::get('/orders/{id:\d+}', 'OrderController@show');
     Router::patch('/orders/{id:\d+}/status', 'OrderController@updateStatus');
@@ -59,14 +60,12 @@ Router::group('/admin', $adminOnly, static function (): void {
 
 Router::group('/professor', $professorOnly, static function (): void {
     Router::get('/dashboard', 'ProfessorDashboardController@index');
-
     Router::get('/treinos', 'TreinoController@index');
     Router::get('/treinos/create', 'TreinoController@create');
     Router::post('/treinos', 'TreinoController@store');
     Router::get('/treinos/{id:\d+}/edit', 'TreinoController@edit');
     Router::put('/treinos/{id:\d+}', 'TreinoController@update');
     Router::delete('/treinos/{id:\d+}', 'TreinoController@delete');
-
     Router::get('/dietas', 'DietaController@index');
     Router::get('/dietas/create', 'DietaController@create');
     Router::post('/dietas', 'DietaController@store');
@@ -77,18 +76,14 @@ Router::group('/professor', $professorOnly, static function (): void {
 
 Router::group('/student', $studentOnly, static function (): void {
     Router::get('/dashboard', 'StudentDashboardController@index');
-
     Router::get('/treinos', 'StudentTreinoController@index');
     Router::get('/treinos/{id:\d+}', 'StudentTreinoController@show');
     Router::post('/treinos/{id:\d+}/executions', 'StudentTreinoController@startExecution');
     Router::post('/treino-executions/{id:\d+}/finish', 'StudentTreinoController@finishExecution');
-
     Router::get('/dietas', 'StudentDietaController@index');
     Router::get('/dietas/{id:\d+}', 'StudentDietaController@show');
-
     Router::get('/perfil', 'StudentProfileController@show');
     Router::put('/perfil', 'StudentProfileController@update');
-
     Router::get('/progresso', 'StudentProgressController@index');
     Router::get('/avaliacoes', 'StudentProgressController@avaliacoes');
     Router::get('/avaliacoes/create', 'StudentProgressController@create');
