@@ -1,0 +1,30 @@
+name: Release validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Ambiente alvo
+        required: true
+        type: choice
+        options: [staging, production]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-release:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: gym-genesis:release-${{ github.sha }}
+      - name: Deployment provider
+        run: |
+          echo "Imagem validada para ${{ inputs.environment }}."
+          echo "O passo de publicação deve ser conectado ao provedor de infraestrutura escolhido."
