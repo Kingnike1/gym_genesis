@@ -19,22 +19,27 @@ final class Router
     {
         self::$container = $container;
     }
+
     public static function get(string $uri, callable|string $callback, array $middleware = []): void
     {
         self::add('GET', $uri, $callback, $middleware);
     }
+
     public static function post(string $uri, callable|string $callback, array $middleware = []): void
     {
         self::add('POST', $uri, $callback, $middleware);
     }
+
     public static function put(string $uri, callable|string $callback, array $middleware = []): void
     {
         self::add('PUT', $uri, $callback, $middleware);
     }
+
     public static function patch(string $uri, callable|string $callback, array $middleware = []): void
     {
         self::add('PATCH', $uri, $callback, $middleware);
     }
+
     public static function delete(string $uri, callable|string $callback, array $middleware = []): void
     {
         self::add('DELETE', $uri, $callback, $middleware);
@@ -97,7 +102,13 @@ final class Router
     {
         $path = self::normalizePath(self::$groupPrefix . '/' . trim($uri, '/'));
         [$pattern, $parameters] = self::compilePattern($path);
-        self::$routes[] = ['method' => $method, 'pattern' => $pattern, 'parameters' => $parameters, 'callback' => $callback, 'middleware' => [...self::$groupMiddleware, ...$middleware]];
+        self::$routes[] = [
+            'method' => $method,
+            'pattern' => $pattern,
+            'parameters' => $parameters,
+            'callback' => $callback,
+            'middleware' => [...self::$groupMiddleware, ...$middleware],
+        ];
     }
 
     private static function compilePattern(string $path): array
@@ -110,7 +121,7 @@ final class Router
             $token = $match[0][0];
             $position = $match[0][1];
             $name = $match[1][0];
-            $constraint = isset($match[2][0]) && $match[2][0] !== '' ? $match[2][0] : '[^/]+';
+            $constraint = isset($match[2][0]) ? $match[2][0] : '[^/]+';
             $pattern .= preg_quote(substr($path, $offset, $position - $offset), '#');
             $pattern .= '(?P<' . $name . '>' . $constraint . ')';
             $parameters[] = $name;
@@ -167,7 +178,6 @@ final class Router
 
     private static function normalizePath(string $path): string
     {
-        $path = '/' . trim(preg_replace('#/+#', '/', $path) ?? '/', '/');
-        return $path === '' ? '/' : $path;
+        return '/' . trim(preg_replace('#/+#', '/', $path) ?? '/', '/');
     }
 }
