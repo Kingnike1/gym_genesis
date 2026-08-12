@@ -152,6 +152,13 @@ final class Router
     private static function requestMethod(): string
     {
         $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+
+        // HEAD must use the same route resolution as GET. The web server will
+        // suppress the response body while preserving the status and headers.
+        if ($method === 'HEAD') {
+            return 'GET';
+        }
+
         if ($method !== 'POST') {
             return $method;
         }
