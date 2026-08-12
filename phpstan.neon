@@ -1,0 +1,8 @@
+parameters:
+    level: 5
+    paths:
+        - app
+        - routes
+        - scripts
+    tmpDir: .phpstan-cache
+    treatPhpDocTypesAsCertain: false
