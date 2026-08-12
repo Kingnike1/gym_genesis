@@ -1,4 +1,24 @@
 services:
+  - type: pserv
+    name: gym-genesis-mysql-staging
+    runtime: image
+    plan: starter
+    image:
+      url: docker.io/library/mysql:8.0
+    disk:
+      name: gym-genesis-mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: gym_genesis_staging
+      - key: MYSQL_USER
+        value: gym_genesis
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+
   - type: web
     name: gym-genesis-staging
     runtime: docker
@@ -8,7 +28,7 @@ services:
     healthCheckPath: /ready
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: /bin/sh -c "php scripts/migrate.php migrate && exec apache2-foreground"
+    dockerCommand: /bin/sh scripts/start-render.sh
     envVars:
       - key: APP_ENV
         value: staging
@@ -19,15 +39,21 @@ services:
       - key: APP_SECRET
         generateValue: true
       - key: DB_HOST
-        sync: false
+        fromService:
+          type: pserv
+          name: gym-genesis-mysql-staging
+          property: host
       - key: DB_PORT
         value: "3306"
       - key: DB_NAME
-        sync: false
+        value: gym_genesis_staging
       - key: DB_USER
-        sync: false
+        value: gym_genesis
       - key: DB_PASSWORD
-        sync: false
+        fromService:
+          type: pserv
+          name: gym-genesis-mysql-staging
+          envVarKey: MYSQL_PASSWORD
       - key: MAIL_HOST
         sync: false
       - key: MAIL_PORT
