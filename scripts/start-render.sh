@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+if [ -n "${DB_SSL_CA:-}" ]; then
+  printf '%s\n' "$DB_SSL_CA" > /tmp/aiven-ca.pem
+  chmod 600 /tmp/aiven-ca.pem
+  export DB_SSL_CA_PATH=/tmp/aiven-ca.pem
+fi
+
 MAX_ATTEMPTS=20
 ATTEMPT=1
 
