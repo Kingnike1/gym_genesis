@@ -9,16 +9,13 @@ $adminOnly = [static fn () => AuthMiddleware::requireUserType(1), $academyContex
 $professorOnly = [static fn () => AuthMiddleware::requireUserType(2), $academyContext];
 $studentOnly = [static fn () => AuthMiddleware::requireUserType(3), $academyContext];
 
-Router::get('/health', static function (): void {
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['status' => 'ok', 'service' => 'gym-genesis'], JSON_UNESCAPED_SLASHES);
-});
+Router::get('/health', 'HealthController@live');
+Router::get('/ready', 'HealthController@ready');
 
 Router::get('/', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
     echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
 });
-
 Router::get('/home', static function (): void {
     echo '<h1>Bem-vindo à Gym Genesis!</h1>';
     echo '<p>Esta é a página inicial da aplicação refatorada.</p>';
