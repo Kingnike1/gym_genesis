@@ -1,7 +1,7 @@
 CREATE TABLE arquivo (
     idarquivo BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
-    usuario_id BIGINT UNSIGNED NULL,
+    usuario_id INT NULL,
     storage_disk VARCHAR(40) NOT NULL DEFAULT 'local',
     storage_path VARCHAR(500) NOT NULL,
     original_name VARCHAR(255) NULL,
