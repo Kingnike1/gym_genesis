@@ -47,6 +47,21 @@ final class UserService
         return $this->userRepository->update($id, strtolower(trim($data->email)), $data->role, $data->active);
     }
 
+    public function updateUserEmail(int $id, string $email): bool
+    {
+        $email = strtolower(trim($email));
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new \InvalidArgumentException('E-mail inválido.');
+        }
+
+        $existing = $this->userRepository->findByEmail($email);
+        if ($existing !== null && (int) $existing['idusuario'] !== $id) {
+            throw new \InvalidArgumentException('E-mail já utilizado por outro usuário.');
+        }
+
+        return $this->userRepository->updateEmail($id, $email);
+    }
+
     public function deleteUser(int $id): bool
     {
         return $this->userRepository->delete($id);
