@@ -2,9 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Services\TreinoService;
-use App\Repositories\TreinoRepository;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\RouteAuthorizationMiddleware;
+use App\Repositories\TreinoRepository;
+use App\Services\TreinoService;
 
 class StudentTreinoController extends Controller
 {
@@ -20,7 +21,7 @@ class StudentTreinoController extends Controller
     {
         $userId = AuthMiddleware::getUserId();
         $treinos = $this->treinoService->getTreinosByAlunoId($userId);
-        $this->render("student/treinos/index", ["treinos" => $treinos]);
+        $this->render('student/treinos/index', ['treinos' => $treinos]);
     }
 
     public function show(int $id): void
@@ -29,7 +30,9 @@ class StudentTreinoController extends Controller
         if (!$treino) {
             $this->handleNotFound();
         }
-        $this->render("student/treinos/show", ["treino" => $treino]);
+
+        RouteAuthorizationMiddleware::requireOwner((int) $treino['aluno_id']);
+        $this->render('student/treinos/show', ['treino' => $treino]);
     }
 
     protected function handleNotFound(): void
