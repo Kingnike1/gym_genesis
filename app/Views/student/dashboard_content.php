@@ -14,24 +14,24 @@
 </div>
 
 <h2 style="margin-top: 40px;">Últimos Treinos</h2>
-<?php if (count($meusTreinos) > 0): ?>
+<?php if (count($meusTreinos) > 0) : ?>
     <ul>
-        <?php foreach (array_slice($meusTreinos, 0, 5) as $treino): ?>
+        <?php foreach (array_slice($meusTreinos, 0, 5) as $treino) : ?>
             <li><?= htmlspecialchars($treino["nome"]) ?> - <?= htmlspecialchars($treino["data_criacao"]) ?></li>
         <?php endforeach; ?>
     </ul>
-<?php else: ?>
+<?php else : ?>
     <p>Você ainda não tem treinos atribuídos.</p>
 <?php endif; ?>
 
 <h2>Últimas Dietas</h2>
-<?php if (count($minhasDietas) > 0): ?>
+<?php if (count($minhasDietas) > 0) : ?>
     <ul>
-        <?php foreach (array_slice($minhasDietas, 0, 5) as $dieta): ?>
+        <?php foreach (array_slice($minhasDietas, 0, 5) as $dieta) : ?>
             <li><?= htmlspecialchars($dieta["nome"]) ?> - <?= htmlspecialchars($dieta["data_criacao"]) ?></li>
         <?php endforeach; ?>
     </ul>
-<?php else: ?>
+<?php else : ?>
     <p>Você ainda não tem dietas atribuídas.</p>
 <?php endif; ?>
 

@@ -57,7 +57,7 @@
 <body>
     <div class="login-container">
         <h2>Login - Gym Genesis</h2>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/login" method="POST">

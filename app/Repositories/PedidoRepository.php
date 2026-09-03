@@ -11,14 +11,61 @@ class PedidoRepository extends BaseRepository
         parent::__construct('pedido_comercial', 'idpedido', true);
     }
 
-    public function createFromItems(int $usuarioId, string $idempotencyKey, array $items, float $desconto = 0.0, float $frete = 0.0): int
+    public function create(int $usuarioId, float $valorTotal, string $status = 'pendente', ?string $dataPedido = null): ?int
     {
+        $allowed = ['pendente', 'aguardando_pagamento', 'pago', 'cancelado', 'reembolsado'];
+        if (!in_array($status, $allowed, true) || $valorTotal < 0) {
+            throw new \InvalidArgumentException('Dados de pedido inválidos.');
+        }
+
+        $idempotencyKey = 'legacy-' . $usuarioId . '-' . bin2hex(random_bytes(12));
+        $stmt = $this->db->prepare(
+            'INSERT INTO pedido_comercial '
+            . '(academia_id, usuario_id, idempotency_key, status, subtotal, desconto, frete, valor_total, created_at) '
+            . 'VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)'
+        );
+        $stmt->execute([
+            $this->academyId(),
+            $usuarioId,
+            $idempotencyKey,
+            $status,
+            $valorTotal,
+            $valorTotal,
+            $dataPedido ?? date('Y-m-d H:i:s'),
+        ]);
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function update(int $id, float $valorTotal, string $status): bool
+    {
+        $allowed = ['pendente', 'aguardando_pagamento', 'pago', 'cancelado', 'reembolsado'];
+        if (!in_array($status, $allowed, true) || $valorTotal < 0) {
+            throw new \InvalidArgumentException('Dados de pedido inválidos.');
+        }
+
+        $stmt = $this->db->prepare(
+            'UPDATE pedido_comercial '
+            . 'SET subtotal=?, desconto=0, frete=0, valor_total=?, status=? '
+            . 'WHERE idpedido=? AND academia_id=?'
+        );
+        return $stmt->execute([$valorTotal, $valorTotal, $status, $id, $this->academyId()]);
+    }
+
+    public function createFromItems(
+        int $usuarioId,
+        string $idempotencyKey,
+        array $items,
+        float $desconto = 0.0,
+        float $frete = 0.0
+    ): int {
         if ($idempotencyKey === '' || $items === []) {
             throw new \InvalidArgumentException('Pedido sem itens ou chave de idempotência.');
         }
 
         return Database::transaction(function () use ($usuarioId, $idempotencyKey, $items, $desconto, $frete): int {
-            $existing = $this->db->prepare('SELECT idpedido FROM pedido_comercial WHERE academia_id=? AND idempotency_key=? LIMIT 1');
+            $existing = $this->db->prepare(
+                'SELECT idpedido FROM pedido_comercial WHERE academia_id=? AND idempotency_key=? LIMIT 1'
+            );
             $existing->execute([$this->academyId(), $idempotencyKey]);
             if ($row = $existing->fetch()) {
                 return (int) $row['idpedido'];
@@ -26,7 +73,10 @@ class PedidoRepository extends BaseRepository
 
             $subtotal = 0.0;
             $resolved = [];
-            $productStmt = $this->db->prepare('SELECT idproduto, nome, preco, estoque FROM produto WHERE idproduto=? AND academia_id=? AND status="ativo" FOR UPDATE');
+            $productStmt = $this->db->prepare(
+                'SELECT idproduto, nome, preco, estoque FROM produto '
+                . 'WHERE idproduto=? AND academia_id=? AND status="ativo" FOR UPDATE'
+            );
             foreach ($items as $item) {
                 $produtoId = (int) ($item['produto_id'] ?? 0);
                 $quantidade = (int) ($item['quantidade'] ?? 0);
@@ -46,23 +96,61 @@ class PedidoRepository extends BaseRepository
             $desconto = max(0, min($desconto, $subtotal));
             $frete = max(0, $frete);
             $total = round($subtotal - $desconto + $frete, 2);
-            $stmt = $this->db->prepare('INSERT INTO pedido_comercial (academia_id, usuario_id, idempotency_key, status, subtotal, desconto, frete, valor_total) VALUES (?, ?, ?, "aguardando_pagamento", ?, ?, ?, ?)');
-            $stmt->execute([$this->academyId(), $usuarioId, $idempotencyKey, $subtotal, $desconto, $frete, $total]);
+            $stmt = $this->db->prepare(
+                'INSERT INTO pedido_comercial '
+                . '(academia_id, usuario_id, idempotency_key, status, subtotal, desconto, frete, valor_total) '
+                . 'VALUES (?, ?, ?, "aguardando_pagamento", ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $this->academyId(),
+                $usuarioId,
+                $idempotencyKey,
+                $subtotal,
+                $desconto,
+                $frete,
+                $total,
+            ]);
             $pedidoId = (int) $this->db->lastInsertId();
 
-            $itemStmt = $this->db->prepare('INSERT INTO pedido_item_registro (pedido_id, produto_id, nome_produto, preco_unitario, quantidade, subtotal) VALUES (?, ?, ?, ?, ?, ?)');
-            $stockStmt = $this->db->prepare('UPDATE produto SET estoque=estoque-? WHERE idproduto=? AND academia_id=? AND estoque>=?');
-            $movementStmt = $this->db->prepare('INSERT INTO estoque_movimentacao (academia_id, produto_id, tipo, quantidade, saldo_anterior, saldo_posterior, motivo, usuario_id) VALUES (?, ?, "saida", ?, ?, ?, ?, ?)');
+            $itemStmt = $this->db->prepare(
+                'INSERT INTO pedido_item_registro '
+                . '(pedido_id, produto_id, nome_produto, preco_unitario, quantidade, subtotal) '
+                . 'VALUES (?, ?, ?, ?, ?, ?)'
+            );
+            $stockStmt = $this->db->prepare(
+                'UPDATE produto SET estoque=estoque-? '
+                . 'WHERE idproduto=? AND academia_id=? AND estoque>=?'
+            );
+            $movementStmt = $this->db->prepare(
+                'INSERT INTO estoque_movimentacao '
+                . '(academia_id, produto_id, tipo, quantidade, saldo_anterior, saldo_posterior, motivo, usuario_id) '
+                . 'VALUES (?, ?, "saida", ?, ?, ?, ?, ?)'
+            );
 
             foreach ($resolved as [$produto, $quantidade, $line]) {
-                $itemStmt->execute([$pedidoId, $produto['idproduto'], $produto['nome'], $produto['preco'], $quantidade, $line]);
+                $itemStmt->execute([
+                    $pedidoId,
+                    $produto['idproduto'],
+                    $produto['nome'],
+                    $produto['preco'],
+                    $quantidade,
+                    $line,
+                ]);
                 $anterior = (int) $produto['estoque'];
                 $posterior = $anterior - $quantidade;
                 $stockStmt->execute([$quantidade, $produto['idproduto'], $this->academyId(), $quantidade]);
                 if ($stockStmt->rowCount() !== 1) {
                     throw new \DomainException('Falha de concorrência ao reservar estoque.');
                 }
-                $movementStmt->execute([$this->academyId(), $produto['idproduto'], -$quantidade, $anterior, $posterior, 'Pedido #' . $pedidoId, $usuarioId]);
+                $movementStmt->execute([
+                    $this->academyId(),
+                    $produto['idproduto'],
+                    -$quantidade,
+                    $anterior,
+                    $posterior,
+                    'Pedido #' . $pedidoId,
+                    $usuarioId,
+                ]);
             }
 
             return $pedidoId;
@@ -71,7 +159,7 @@ class PedidoRepository extends BaseRepository
 
     public function updateStatus(int $id, string $status): bool
     {
-        $allowed = ['pendente','aguardando_pagamento','pago','cancelado','reembolsado'];
+        $allowed = ['pendente', 'aguardando_pagamento', 'pago', 'cancelado', 'reembolsado'];
         if (!in_array($status, $allowed, true)) {
             throw new \InvalidArgumentException('Status de pedido inválido.');
         }
@@ -81,15 +169,30 @@ class PedidoRepository extends BaseRepository
 
     public function items(int $id): array
     {
-        $stmt = $this->db->prepare('SELECT i.* FROM pedido_item_registro i INNER JOIN pedido_comercial p ON p.idpedido=i.pedido_id WHERE i.pedido_id=? AND p.academia_id=?');
+        $stmt = $this->db->prepare(
+            'SELECT i.* FROM pedido_item_registro i '
+            . 'INNER JOIN pedido_comercial p ON p.idpedido=i.pedido_id '
+            . 'WHERE i.pedido_id=? AND p.academia_id=?'
+        );
         $stmt->execute([$id, $this->academyId()]);
         return $stmt->fetchAll();
     }
 
     public function findByUsuarioId(int $usuarioId): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM pedido_comercial WHERE usuario_id=? AND academia_id=? ORDER BY created_at DESC');
+        $stmt = $this->db->prepare(
+            'SELECT * FROM pedido_comercial WHERE usuario_id=? AND academia_id=? ORDER BY created_at DESC'
+        );
         $stmt->execute([$usuarioId, $this->academyId()]);
+        return $stmt->fetchAll();
+    }
+
+    public function findByStatus(string $status): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM pedido_comercial WHERE status=? AND academia_id=? ORDER BY created_at DESC'
+        );
+        $stmt->execute([$status, $this->academyId()]);
         return $stmt->fetchAll();
     }
 }

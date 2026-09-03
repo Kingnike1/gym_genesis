@@ -1,30 +1,30 @@
 <h2>Meu Progresso</h2>
 <p>Acompanhe sua evolução física e desempenho na academia.</p>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage)) : ?>
     <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($errorMessage) ?>
     </div>
 <?php endif; ?>
 
-<?php if (isset($successMessage)): ?>
+<?php if (isset($successMessage)) : ?>
     <div style="background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($successMessage) ?>
     </div>
 <?php endif; ?>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-    <?php if ($progress['totalAvaliacoes'] > 0): ?>
+    <?php if ($progress['totalAvaliacoes'] > 0) : ?>
         <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #1976d2;">
             <h3 style="margin-top: 0;">Peso Atual</h3>
             <p style="font-size: 2em; margin: 10px 0; color: #1976d2;">
                 <?= htmlspecialchars(number_format($progress['pesoAtual'], 2, ',', '.')) ?> kg
             </p>
-            <?php if ($progress['variacao'] != 0): ?>
+            <?php if ($progress['variacao'] != 0) : ?>
                 <p style="margin: 0; font-size: 0.9em;">
-                    <?php if ($progress['variacao'] > 0): ?>
+                    <?php if ($progress['variacao'] > 0) : ?>
                         <span style="color: #d32f2f;">↑ +<?= htmlspecialchars(number_format($progress['variacao'], 2, ',', '.')) ?> kg (<?= htmlspecialchars($progress['percentualVariacao']) ?>%)</span>
-                    <?php else: ?>
+                    <?php else : ?>
                         <span style="color: #388e3c;">↓ <?= htmlspecialchars(number_format($progress['variacao'], 2, ',', '.')) ?> kg (<?= htmlspecialchars($progress['percentualVariacao']) ?>%)</span>
                     <?php endif; ?>
                 </p>
@@ -57,13 +57,13 @@
             </p>
         </div>
 
-        <?php if ($progress['gorduraAtual'] !== null): ?>
+        <?php if ($progress['gorduraAtual'] !== null) : ?>
             <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; border-left: 4px solid #e65100;">
                 <h3 style="margin-top: 0;">Percentual de Gordura</h3>
                 <p style="font-size: 2em; margin: 10px 0; color: #e65100;">
                     <?= htmlspecialchars(number_format($progress['gorduraAtual'], 2, ',', '.')) ?>%
                 </p>
-                <?php if ($progress['gorduraInicial'] !== null): ?>
+                <?php if ($progress['gorduraInicial'] !== null) : ?>
                     <p style="margin: 0; font-size: 0.9em;">
                         Inicial: <?= htmlspecialchars(number_format($progress['gorduraInicial'], 2, ',', '.')) ?>%
                     </p>
@@ -78,7 +78,7 @@
             </p>
             <p style="margin: 0; font-size: 0.9em;">avaliações registradas</p>
         </div>
-    <?php else: ?>
+    <?php else : ?>
         <div style="background-color: #fff9c4; padding: 20px; border-radius: 8px; grid-column: 1 / -1;">
             <p>Você ainda não tem avaliações registradas. <a href="/student/avaliacoes/create">Crie sua primeira avaliação</a> para começar a acompanhar seu progresso!</p>
         </div>

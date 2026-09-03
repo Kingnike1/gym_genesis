@@ -4,5 +4,8 @@ parameters:
         - app
         - routes
         - scripts
+    excludePaths:
+        analyse:
+            - app/Views/*
     tmpDir: .phpstan-cache
     treatPhpDocTypesAsCertain: false

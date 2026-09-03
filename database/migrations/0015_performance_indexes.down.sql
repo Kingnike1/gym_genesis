@@ -1,7 +1,6 @@
-DROP INDEX idx_pagamento_academia_pedido_status ON pagamento;
+DROP INDEX idx_pagamento_comercial_academia_pedido_status ON pagamento_comercial;
 DROP INDEX idx_pedido_comercial_academia_usuario_status ON pedido_comercial;
 DROP INDEX idx_produto_academia_status_categoria ON produto;
-DROP INDEX idx_matricula_academia_aluno_status ON matricula;
 DROP INDEX idx_avaliacao_fisica_aluno_data ON avaliacao_fisica_registro;
 DROP INDEX idx_plano_alimentar_academia_aluno_status ON plano_alimentar;
 DROP INDEX idx_ficha_treino_academia_aluno_status ON ficha_treino;

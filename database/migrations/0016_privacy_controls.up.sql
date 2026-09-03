@@ -1,6 +1,6 @@
 CREATE TABLE consentimento_privacidade (
   idconsentimento BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   usuario_id INT NOT NULL,
   finalidade VARCHAR(120) NOT NULL,
   versao_termo VARCHAR(40) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE consentimento_privacidade (
 
 CREATE TABLE solicitacao_titular (
   idsolicitacao BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   usuario_id INT NOT NULL,
   tipo ENUM('acesso','correcao','exportacao','eliminacao','anonimizacao','revogacao') NOT NULL,
   status ENUM('aberta','em_analise','concluida','negada') NOT NULL DEFAULT 'aberta',
@@ -31,7 +31,7 @@ CREATE TABLE solicitacao_titular (
 
 CREATE TABLE politica_retencao (
   idpolitica BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   categoria VARCHAR(80) NOT NULL,
   dias_retencao INT UNSIGNED NOT NULL,
   acao ENUM('eliminar','anonimizar','revisar') NOT NULL DEFAULT 'revisar',

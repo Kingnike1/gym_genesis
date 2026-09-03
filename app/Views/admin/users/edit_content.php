@@ -61,7 +61,7 @@
 <body>
     <div class="container">
         <h1>Editar Usuário</h1>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/admin/users/<?= htmlspecialchars($user["idusuario"]) ?>" method="POST">

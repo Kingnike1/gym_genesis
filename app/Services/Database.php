@@ -22,6 +22,7 @@ final class Database
         $database = self::env('DB_NAME');
         $user = self::env('DB_USER');
         $password = self::env('DB_PASSWORD', '');
+        $sslCaPath = self::env('DB_SSL_CA_PATH', '');
 
         if ($database === '' || $user === '') {
             throw new RuntimeException('DB_NAME e DB_USER são obrigatórios.');
@@ -34,6 +35,14 @@ final class Database
             PDO::ATTR_EMULATE_PREPARES => false,
             PDO::ATTR_STRINGIFY_FETCHES => false,
         ];
+
+        if ($sslCaPath !== '') {
+            if (!is_readable($sslCaPath)) {
+                throw new RuntimeException('Certificado CA do banco não está acessível.');
+            }
+            $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCaPath;
+            $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+        }
 
         try {
             self::$pdo = new PDO($dsn, $user, $password, $options);
@@ -69,6 +78,6 @@ final class Database
     private static function env(string $key, string $default = ''): string
     {
         $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
-        return $value === false || $value === null || $value === '' ? $default : (string) $value;
+        return $value === false || $value === '' ? $default : (string) $value;
     }
 }

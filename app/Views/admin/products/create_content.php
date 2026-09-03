@@ -65,7 +65,7 @@
 <body>
     <div class="container">
         <h1>Criar Novo Produto</h1>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/admin/products" method="POST">

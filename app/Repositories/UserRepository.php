@@ -52,12 +52,23 @@ class UserRepository extends BaseRepository
 
     public function update(int $id, string $email, UserRole $role, bool $active): bool
     {
-        if ($this->findById($id) === null) return false;
+        if ($this->findById($id) === null) {
+            return false;
+        }
         return Database::transaction(function () use ($id, $email, $role, $active): bool {
             $this->db->prepare('UPDATE usuario SET email = ? WHERE idusuario = ?')->execute([$email, $id]);
             $membership = $this->db->prepare('UPDATE academia_usuario SET papel = ?, ativo = ? WHERE usuario_id = ? AND academia_id = ?');
             return $membership->execute([$role->value, $active ? 1 : 0, $id, AcademyContext::id()]);
         });
+    }
+
+    public function updateEmail(int $id, string $email): bool
+    {
+        if ($this->findById($id) === null) {
+            return false;
+        }
+        $stmt = $this->db->prepare('UPDATE usuario SET email = ? WHERE idusuario = ?');
+        return $stmt->execute([$email, $id]);
     }
 
     public function updatePasswordHash(int $id, string $passwordHash): bool
@@ -79,7 +90,9 @@ class UserRepository extends BaseRepository
             $membership->execute([$id, $academyId]);
             $remaining = $this->db->prepare('SELECT COUNT(*) FROM academia_usuario WHERE usuario_id = ?');
             $remaining->execute([$id]);
-            if ((int) $remaining->fetchColumn() > 0) return true;
+            if ((int) $remaining->fetchColumn() > 0) {
+                return true;
+            }
             $stmt = $this->db->prepare("UPDATE usuario SET status = 'inativo' WHERE idusuario = ?");
             return $stmt->execute([$id]);
         });

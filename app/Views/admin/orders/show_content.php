@@ -17,7 +17,7 @@
 </style>
 
 <div class="order-details">
-    <?php if (isset($errorMessage)): ?>
+    <?php if (isset($errorMessage)) : ?>
         <p class="error"><?= htmlspecialchars($errorMessage) ?></p>
     <?php endif; ?>
 

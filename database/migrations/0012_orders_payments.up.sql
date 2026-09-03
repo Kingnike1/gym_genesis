@@ -1,7 +1,7 @@
 CREATE TABLE pedido_comercial (
     idpedido BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
-    usuario_id BIGINT UNSIGNED NOT NULL,
+    usuario_id INT NOT NULL,
     idempotency_key VARCHAR(100) NOT NULL,
     status ENUM('pendente','aguardando_pagamento','pago','cancelado','reembolsado') NOT NULL DEFAULT 'pendente',
     subtotal DECIMAL(10,2) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE pedido_comercial (
 CREATE TABLE pedido_item_registro (
     iditem BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     pedido_id BIGINT UNSIGNED NOT NULL,
-    produto_id BIGINT UNSIGNED NOT NULL,
+    produto_id INT NOT NULL,
     nome_produto VARCHAR(255) NOT NULL,
     preco_unitario DECIMAL(10,2) NOT NULL,
     quantidade INT UNSIGNED NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE pedido_item_registro (
     CONSTRAINT fk_item_produto FOREIGN KEY (produto_id) REFERENCES produto(idproduto)
 );
 
-CREATE TABLE pagamento (
+CREATE TABLE pagamento_comercial (
     idpagamento BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
     pedido_id BIGINT UNSIGNED NOT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE pagamento (
     valor DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_pagamento_academia FOREIGN KEY (academia_id) REFERENCES academias(idacademia),
-    CONSTRAINT fk_pagamento_pedido FOREIGN KEY (pedido_id) REFERENCES pedido_comercial(idpedido),
-    UNIQUE KEY uk_pagamento_idempotency (academia_id, idempotency_key),
-    UNIQUE KEY uk_pagamento_external (gateway, external_id)
+    CONSTRAINT fk_pagamento_comercial_academia FOREIGN KEY (academia_id) REFERENCES academias(idacademia),
+    CONSTRAINT fk_pagamento_comercial_pedido FOREIGN KEY (pedido_id) REFERENCES pedido_comercial(idpedido),
+    UNIQUE KEY uk_pagamento_comercial_idempotency (academia_id, idempotency_key),
+    UNIQUE KEY uk_pagamento_comercial_external (gateway, external_id)
 );

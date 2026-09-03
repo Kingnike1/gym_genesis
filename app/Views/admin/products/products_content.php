@@ -21,8 +21,8 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (isset($produtos) && count($produtos) > 0): ?>
-                <?php foreach ($produtos as $produto): ?>
+            <?php if (isset($produtos) && count($produtos) > 0) : ?>
+                <?php foreach ($produtos as $produto) : ?>
                     <tr>
                         <td><?= htmlspecialchars($produto["idproduto"]) ?></td>
                         <td><?= htmlspecialchars($produto["nome"]) ?></td>
@@ -35,7 +35,7 @@
                         </td>
                     </tr>
                 <?php endforeach; ?>
-            <?php else: ?>
+            <?php else : ?>
                 <tr>
                     <td colspan="6" style="text-align: center;">Nenhum produto encontrado.</td>
                 </tr>

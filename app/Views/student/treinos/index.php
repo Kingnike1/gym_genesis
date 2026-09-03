@@ -47,7 +47,7 @@
 <body>
     <div class="container">
         <h1>Meus Treinos</h1>
-        <?php if (count($treinos) > 0): ?>
+        <?php if (count($treinos) > 0) : ?>
             <table>
                 <thead>
                     <tr>
@@ -58,7 +58,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($treinos as $treino): ?>
+                    <?php foreach ($treinos as $treino) : ?>
                         <tr>
                             <td><?= htmlspecialchars($treino["idtreino"]) ?></td>
                             <td><?= htmlspecialchars($treino["nome"]) ?></td>
@@ -70,7 +70,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else: ?>
+        <?php else : ?>
             <p>Você ainda não tem treinos atribuídos.</p>
         <?php endif; ?>
     </div>

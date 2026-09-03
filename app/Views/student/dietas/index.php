@@ -47,7 +47,7 @@
 <body>
     <div class="container">
         <h1>Minhas Dietas</h1>
-        <?php if (count($dietas) > 0): ?>
+        <?php if (count($dietas) > 0) : ?>
             <table>
                 <thead>
                     <tr>
@@ -58,7 +58,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($dietas as $dieta): ?>
+                    <?php foreach ($dietas as $dieta) : ?>
                         <tr>
                             <td><?= htmlspecialchars($dieta["iddieta"]) ?></td>
                             <td><?= htmlspecialchars($dieta["nome"]) ?></td>
@@ -70,7 +70,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else: ?>
+        <?php else : ?>
             <p>Você ainda não tem dietas atribuídas.</p>
         <?php endif; ?>
     </div>

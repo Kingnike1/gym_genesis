@@ -1,4 +1,7 @@
 {
+    "name": "kingnike1/gym-genesis",
+    "description": "Plataforma de gestão multiacademia Gym Genesis",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "phpmailer/phpmailer": "^6.8",
@@ -34,6 +37,10 @@
         "analyse": "phpstan analyse --memory-limit=512M",
         "lint": "phpcs",
         "lint:fix": "phpcbf",
-        "check": ["@lint", "@analyse", "@test"]
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ]
     }
 }

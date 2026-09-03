@@ -15,12 +15,35 @@ final class Router
     private static array $groupMiddleware = [];
     private static ?Container $container = null;
 
-    public static function setContainer(Container $container): void { self::$container = $container; }
-    public static function get(string $uri, callable|string $callback, array $middleware = []): void { self::add('GET', $uri, $callback, $middleware); }
-    public static function post(string $uri, callable|string $callback, array $middleware = []): void { self::add('POST', $uri, $callback, $middleware); }
-    public static function put(string $uri, callable|string $callback, array $middleware = []): void { self::add('PUT', $uri, $callback, $middleware); }
-    public static function patch(string $uri, callable|string $callback, array $middleware = []): void { self::add('PATCH', $uri, $callback, $middleware); }
-    public static function delete(string $uri, callable|string $callback, array $middleware = []): void { self::add('DELETE', $uri, $callback, $middleware); }
+    public static function setContainer(Container $container): void
+    {
+        self::$container = $container;
+    }
+
+    public static function get(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('GET', $uri, $callback, $middleware);
+    }
+
+    public static function post(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('POST', $uri, $callback, $middleware);
+    }
+
+    public static function put(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('PUT', $uri, $callback, $middleware);
+    }
+
+    public static function patch(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('PATCH', $uri, $callback, $middleware);
+    }
+
+    public static function delete(string $uri, callable|string $callback, array $middleware = []): void
+    {
+        self::add('DELETE', $uri, $callback, $middleware);
+    }
 
     public static function group(string $prefix, array $middleware, callable $routes): void
     {
@@ -28,7 +51,12 @@ final class Router
         $previousMiddleware = self::$groupMiddleware;
         self::$groupPrefix = self::normalizePath($previousPrefix . '/' . trim($prefix, '/'));
         self::$groupMiddleware = [...$previousMiddleware, ...$middleware];
-        try { $routes(); } finally { self::$groupPrefix = $previousPrefix; self::$groupMiddleware = $previousMiddleware; }
+        try {
+            $routes();
+        } finally {
+            self::$groupPrefix = $previousPrefix;
+            self::$groupMiddleware = $previousMiddleware;
+        }
     }
 
     public static function url(string $path = '/'): string
@@ -45,17 +73,28 @@ final class Router
         $allowedMethods = [];
 
         foreach (self::$routes as $route) {
-            if (!preg_match($route['pattern'], $path, $matches)) continue;
-            if ($route['method'] !== $method) { $allowedMethods[] = $route['method']; continue; }
+            if (!preg_match($route['pattern'], $path, $matches)) {
+                continue;
+            }
+            if ($route['method'] !== $method) {
+                $allowedMethods[] = $route['method'];
+                continue;
+            }
 
             $parameters = [];
-            foreach ($route['parameters'] as $name) $parameters[] = $matches[$name] ?? null;
-            foreach ($route['middleware'] as $middleware) self::invoke($middleware, $parameters);
+            foreach ($route['parameters'] as $name) {
+                $parameters[] = $matches[$name] ?? null;
+            }
+            foreach ($route['middleware'] as $middleware) {
+                self::invoke($middleware, $parameters);
+            }
             self::invoke($route['callback'], $parameters);
             return;
         }
 
-        if ($allowedMethods !== []) throw new MethodNotAllowedException($allowedMethods);
+        if ($allowedMethods !== []) {
+            throw new MethodNotAllowedException($allowedMethods);
+        }
         throw new NotFoundException('Página não encontrada.');
     }
 
@@ -63,7 +102,13 @@ final class Router
     {
         $path = self::normalizePath(self::$groupPrefix . '/' . trim($uri, '/'));
         [$pattern, $parameters] = self::compilePattern($path);
-        self::$routes[] = ['method' => $method, 'pattern' => $pattern, 'parameters' => $parameters, 'callback' => $callback, 'middleware' => [...self::$groupMiddleware, ...$middleware]];
+        self::$routes[] = [
+            'method' => $method,
+            'pattern' => $pattern,
+            'parameters' => $parameters,
+            'callback' => $callback,
+            'middleware' => [...self::$groupMiddleware, ...$middleware],
+        ];
     }
 
     private static function compilePattern(string $path): array
@@ -76,7 +121,7 @@ final class Router
             $token = $match[0][0];
             $position = $match[0][1];
             $name = $match[1][0];
-            $constraint = isset($match[2][0]) && $match[2][0] !== '' ? $match[2][0] : '[^/]+';
+            $constraint = isset($match[2][0]) ? $match[2][0] : '[^/]+';
             $pattern .= preg_quote(substr($path, $offset, $position - $offset), '#');
             $pattern .= '(?P<' . $name . '>' . $constraint . ')';
             $parameters[] = $name;
@@ -88,11 +133,18 @@ final class Router
 
     private static function invoke(callable|string $handler, array $parameters): void
     {
-        if (is_callable($handler)) { $handler(...$parameters); return; }
-        if (!str_contains($handler, '@')) throw new RuntimeException('Handler de rota inválido: ' . $handler);
+        if (is_callable($handler)) {
+            $handler(...$parameters);
+            return;
+        }
+        if (!str_contains($handler, '@')) {
+            throw new RuntimeException('Handler de rota inválido: ' . $handler);
+        }
         [$class, $method] = explode('@', $handler, 2);
         $class = str_contains($class, '\\') ? $class : 'App\\Controllers\\' . $class;
-        if (!class_exists($class) || !method_exists($class, $method)) throw new RuntimeException('Handler de rota não encontrado: ' . $handler);
+        if (!class_exists($class) || !method_exists($class, $method)) {
+            throw new RuntimeException('Handler de rota não encontrado: ' . $handler);
+        }
         $instance = self::$container?->get($class) ?? new $class();
         $instance->{$method}(...$parameters);
     }
@@ -100,7 +152,16 @@ final class Router
     private static function requestMethod(): string
     {
         $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        if ($method !== 'POST') return $method;
+
+        // HEAD must use the same route resolution as GET. The web server will
+        // suppress the response body while preserving the status and headers.
+        if ($method === 'HEAD') {
+            return 'GET';
+        }
+
+        if ($method !== 'POST') {
+            return $method;
+        }
         $override = strtoupper((string) ($_POST['_method'] ?? ''));
         return in_array($override, self::OVERRIDABLE_METHODS, true) ? $override : $method;
     }
@@ -109,7 +170,9 @@ final class Router
     {
         $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
         $basePath = self::basePath();
-        if ($basePath !== '/' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) $path = substr($path, strlen($basePath)) ?: '/';
+        if ($basePath !== '/' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
+            $path = substr($path, strlen($basePath)) ?: '/';
+        }
         return self::normalizePath($path);
     }
 
@@ -122,7 +185,6 @@ final class Router
 
     private static function normalizePath(string $path): string
     {
-        $path = '/' . trim(preg_replace('#/+#', '/', $path) ?? '/', '/');
-        return $path === '' ? '/' : $path;
+        return '/' . trim(preg_replace('#/+#', '/', $path) ?? '/', '/');
     }
 }

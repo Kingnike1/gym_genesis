@@ -1,6 +1,6 @@
 CREATE TABLE api_token (
   idtoken BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   usuario_id INT NOT NULL,
   nome VARCHAR(120) NOT NULL,
   token_hash CHAR(64) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE api_token (
 
 CREATE TABLE webhook_evento (
   idevento BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  academia_id INT NOT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
   provedor VARCHAR(80) NOT NULL,
   evento_externo_id VARCHAR(190) NOT NULL,
   tipo VARCHAR(120) NOT NULL,

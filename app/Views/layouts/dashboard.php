@@ -23,7 +23,7 @@ $contentView = $contentView ?? null;
         <p class="brand">Gym Genesis</p>
         <nav>
             <ul class="nav">
-                <?php foreach ($navigation as $label => $path): ?>
+                <?php foreach ($navigation as $label => $path) : ?>
                     <li><a href="<?= htmlspecialchars(Router::url($path), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></a></li>
                 <?php endforeach; ?>
             </ul>
@@ -37,10 +37,16 @@ $contentView = $contentView ?? null;
                 <button class="button-danger" type="submit">Sair</button>
             </form>
         </header>
-        <?php if (!empty($errorMessage)): ?><div class="alert alert-error" role="alert"><?= htmlspecialchars((string) $errorMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php endif; ?>
-        <?php if (!empty($successMessage)): ?><div class="alert alert-success" role="status"><?= htmlspecialchars((string) $successMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php endif; ?>
+        <?php if (!empty($errorMessage)) :
+            ?><div class="alert alert-error" role="alert"><?= htmlspecialchars((string) $errorMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php
+        endif; ?>
+        <?php if (!empty($successMessage)) :
+            ?><div class="alert alert-success" role="status"><?= htmlspecialchars((string) $successMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php
+        endif; ?>
         <section class="card">
-            <?php if ($contentView !== null && is_file($contentView)): include $contentView; else: ?>
+            <?php if ($contentView !== null && is_file($contentView)) :
+                include $contentView;
+            else : ?>
                 <div class="empty-state">Nenhum conteúdo disponível.</div>
             <?php endif; ?>
         </section>

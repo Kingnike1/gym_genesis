@@ -44,7 +44,7 @@
             </p>
         </div>
 
-        <?php if ($avaliacao['percentual_gordura']): ?>
+        <?php if ($avaliacao['percentual_gordura']) : ?>
             <div style="background-color: white; padding: 15px; border-radius: 4px; border-left: 4px solid #e65100;">
                 <p style="margin: 0; color: #999; font-size: 0.9em;">Percentual de Gordura</p>
                 <p style="margin: 10px 0 0 0; font-size: 1.8em; color: #e65100; font-weight: bold;">

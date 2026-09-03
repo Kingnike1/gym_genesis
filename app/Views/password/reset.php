@@ -1,8 +1,12 @@
 <?php
+
 use App\Routes\Router;
+
 ?>
 <h1>Definir nova senha</h1>
-<?php if (!empty($errorMessage)): ?><p><?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
+<?php if (!empty($errorMessage)) :
+    ?><p><?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?></p><?php
+endif; ?>
 <form method="post" action="<?= htmlspecialchars(Router::url('/password/reset'), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '', ENT_QUOTES, 'UTF-8') ?>">

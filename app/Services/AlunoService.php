@@ -66,6 +66,11 @@ class AlunoService
         return $this->alunoRepository->findByUsuarioId($usuarioId);
     }
 
+    public function getAllAlunos(): array
+    {
+        return $this->alunoRepository->all();
+    }
+
     public function search(string $term = '', ?string $status = null, int $page = 1, int $perPage = 25): array
     {
         $perPage = max(1, min(100, $perPage));

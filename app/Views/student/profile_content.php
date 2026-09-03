@@ -1,13 +1,13 @@
 <h2>Meu Perfil</h2>
 <p>Visualize e edite suas informações pessoais.</p>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage)) : ?>
     <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($errorMessage) ?>
     </div>
 <?php endif; ?>
 
-<?php if (isset($successMessage)): ?>
+<?php if (isset($successMessage)) : ?>
     <div style="background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <?= htmlspecialchars($successMessage) ?>
     </div>

@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS plano_alimentar (
     idplano_alimentar BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     academia_id BIGINT UNSIGNED NOT NULL,
-    aluno_id BIGINT UNSIGNED NOT NULL,
-    responsavel_usuario_id BIGINT UNSIGNED NOT NULL,
+    aluno_id INT NOT NULL,
+    responsavel_usuario_id INT NOT NULL,
     nome VARCHAR(150) NOT NULL,
     objetivo VARCHAR(255) NULL,
     observacoes TEXT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS plano_alimentar_item (
 CREATE TABLE IF NOT EXISTS plano_alimentar_historico (
     idhistorico BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     plano_alimentar_id BIGINT UNSIGNED NOT NULL,
-    usuario_id BIGINT UNSIGNED NOT NULL,
+    usuario_id INT NOT NULL,
     versao INT UNSIGNED NOT NULL,
     evento VARCHAR(40) NOT NULL,
     snapshot_json JSON NULL,

@@ -13,7 +13,9 @@ final class AuthMiddleware
     {
         SessionManager::start();
         $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
-        if ($userId <= 0) return false;
+        if ($userId <= 0) {
+            return false;
+        }
 
         $stmt = Database::getConnection()->prepare("SELECT session_version, status FROM usuario WHERE idusuario=? LIMIT 1");
         $stmt->execute([$userId]);
@@ -49,8 +51,22 @@ final class AuthMiddleware
         }
     }
 
-    public static function requireUserType(int $userType): void { self::requireRole(UserRole::fromInput($userType)); }
-    public static function getUserId(): ?int { SessionManager::start(); return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null; }
-    public static function getUserRole(): ?UserRole { SessionManager::start(); return isset($_SESSION['user_type']) ? UserRole::tryFrom((int) $_SESSION['user_type']) : null; }
-    public static function getUserType(): ?int { return self::getUserRole()?->value; }
+    public static function requireUserType(int $userType): void
+    {
+        self::requireRole(UserRole::fromInput($userType));
+    }
+    public static function getUserId(): ?int
+    {
+        SessionManager::start();
+        return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+    }
+    public static function getUserRole(): ?UserRole
+    {
+        SessionManager::start();
+        return isset($_SESSION['user_type']) ? UserRole::tryFrom((int) $_SESSION['user_type']) : null;
+    }
+    public static function getUserType(): ?int
+    {
+        return self::getUserRole()?->value;
+    }
 }

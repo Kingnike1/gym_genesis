@@ -65,7 +65,7 @@
 <body>
     <div class="container">
         <h1>Editar Treino</h1>
-        <?php if (isset($errorMessage)): ?>
+        <?php if (isset($errorMessage)) : ?>
             <p class="error-message"><?= htmlspecialchars($errorMessage) ?></p>
         <?php endif; ?>
         <form action="/gym_genesis/professor/treinos/<?= htmlspecialchars($treino["idtreino"]) ?>" method="POST">

@@ -50,8 +50,8 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (count($planos) > 0): ?>
-                <?php foreach ($planos as $plano): ?>
+            <?php if (count($planos) > 0) : ?>
+                <?php foreach ($planos as $plano) : ?>
                     <tr>
                         <td><?= htmlspecialchars($plano["idplano"]) ?></td>
                         <td><?= htmlspecialchars($plano["tipo"]) ?></td>
@@ -64,7 +64,7 @@
                         </td>
                     </tr>
                 <?php endforeach; ?>
-            <?php else: ?>
+            <?php else : ?>
                 <tr>
                     <td colspan="6" style="text-align: center;">Nenhum plano encontrado.</td>
                 </tr>

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS aluno (
   idaluno INT NOT NULL AUTO_INCREMENT,
-  academia_id INT NOT NULL,
-  unidade_id INT NULL,
+  academia_id BIGINT UNSIGNED NOT NULL,
+  unidade_id BIGINT UNSIGNED NULL,
   usuario_id INT NOT NULL,
   matricula VARCHAR(40) NOT NULL,
   nome VARCHAR(120) NOT NULL,
